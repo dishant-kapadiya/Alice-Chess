@@ -1,6 +1,8 @@
 import random
 import sys
 
+# usage python Parser.py <number of sentence you want>
+
 lines = [line.rstrip('\n').split("~~~") for line in open("message-grammer.txt")]
 lines[-1][-1] = '\n'
 
@@ -38,5 +40,3 @@ CFG['<player>'] = [('black',)]
 for i in range(int(sys.argv[1])):
     print generate('<playermsg>')
     sentence = []
-# for temp in CFG:
-#      sys.stdout.write(temp+" : "+str(CFG[temp])+"\n")
