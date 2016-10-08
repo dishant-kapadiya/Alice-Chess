@@ -1,10 +1,16 @@
+#!/usr/bin/env python
+
 import random
 import sys
 
+
 # usage python Parser.py <number of sentence you want>
 
+
+
+
 class Message_Grammer:
-    def __init__(self, file = "message-grammer.txt"):
+    def __init__(self, file="message-grammer.txt"):
         self.__grammer_file = file
         self.CFG = dict()
         lines = [line.rstrip('\n').split("~~~") for line in open(self.__grammer_file)]
@@ -22,8 +28,6 @@ class Message_Grammer:
 sentence = []
 
 
-
-
 def generate_sentence(symbol, CFG):
     if symbol not in CFG.keys():
         sentence.append(symbol)
@@ -35,13 +39,11 @@ def generate_sentence(symbol, CFG):
     return "".join(sentence)
 
 
-
 if __name__ == '__main__':
     end = False
     grammer = Message_Grammer()
     while not end:
         input_message = raw_input()
-
         # check if input message is assigning player a color
         if "you are " in input_message:
             # set color and skip outputting a message if necessary
@@ -52,7 +54,10 @@ if __name__ == '__main__':
                 grammer.CFG['<player>'] = [('white',)]
 
         elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
-            sys.exit()
+            end = True
+            sys.exit(0)
 
-        sys.stdout.write(generate_sentence('<playermsg>', grammer.CFG)+"\n")
+        sys.stdout.write(generate_sentence('<playermsg>', grammer.CFG) + "\n")
         sentence = []
+        sys.stdin.flush()
+        sys.stdout.flush()
