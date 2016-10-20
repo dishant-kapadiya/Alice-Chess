@@ -3,14 +3,12 @@
 import random
 import sys
 
-
-# usage python Parser.py <number of sentence you want>
-
-
-
-
+# class for grammer to generate player messages
+# self.CFG is a dictionary which stores values based on the Non-Terminal head of grammer
+# the corresponding value is list of tuples. Each tuples describes a combination of Terminal
+# and Non-Terminal which can be used to generate a valid statement.
 class Message_Grammer:
-    def __init__(self, file="message-grammer.txt"):
+    def __init__(self, file="message-grammer"):
         self.__grammer_file = file
         self.CFG = dict()
         lines = [line.rstrip('\n').split("~~~") for line in open(self.__grammer_file)]
@@ -24,10 +22,11 @@ class Message_Grammer:
                     a = tuple(temp.split("~"))
                     self.CFG[line[0]].append(a)
 
-
+#global variable for generated sentance
 sentence = []
 
-
+# function to generate a valid sentence based on the given grammer
+# creates a tree from the start symbol and explores it until no Non-Terminal is found in the sentance
 def generate_sentence(symbol, CFG):
     if symbol not in CFG.keys():
         sentence.append(symbol)
