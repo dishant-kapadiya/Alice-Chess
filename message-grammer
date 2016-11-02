@@ -1,0 +1,74 @@
+<message>~~~<refmsg>~<newline>
+<message>~~~<playermsg>~<newline>
+
+<refmsg>~~~<colormsg>
+<refmsg>~~~<move>
+<refmsg>~~~<offerdraw>
+<refmsg>~~~<declinedraw>
+<refmsg>~~~<win>
+<refmsg>~~~<lose>
+<refmsg>~~~<draw>
+<refmsg>~~~<badsyntax>
+<refmsg>~~~<badmove>
+
+<playermsg>~~~<move>
+<playermsg>~~~<offerdraw>
+<playermsg>~~~<acceptdraw>
+<playermsg>~~~<declinedraw>
+<playermsg>~~~<surrender>
+
+<colormsg>~~~you are ~<player>
+
+<move>~~~<player>~ moves ~<piece>~ from ~<aposn>~ to ~<posn>
+
+<offerdraw>~~~<player>~ offers draw
+<acceptdraw>~~~<player>~ accepts draw
+<declinedraw>~~~<player>~ declines draw
+<surrender>~~~<player>~ surrenders
+
+<win>~~~<player>~ wins by reason of  ~<reason>
+<lose>~~~<player>~ loses by reason of  ~<reason>
+<draw>~~~the game is drawn
+
+<badsyntax>~~~bad syntax
+<badmove>~~~bad move
+
+<player>~~~white
+<player>~~~black
+
+<piece>~~~K
+<piece>~~~Q
+<piece>~~~R
+<piece>~~~B
+<piece>~~~N
+<piece>~~~P
+
+<aposn>~~~<board>~ ~<posn>
+<board>~~~1
+<board>~~~2
+
+<posn>~~~<column>~<row>
+
+<column>~~~a
+<column>~~~b
+<column>~~~c
+<column>~~~d
+<column>~~~e
+<column>~~~f
+<column>~~~g
+<column>~~~h
+
+<row>~~~1
+<row>~~~2
+<row>~~~3
+<row>~~~4
+<row>~~~5
+<row>~~~6
+<row>~~~7
+<row>~~~8
+
+<reason>~~~checkmate
+<reason>~~~surrender
+<reason>~~~forfeit
+
+<newline>~~~\n
