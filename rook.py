@@ -2,13 +2,11 @@ from piece import Piece
 
 class Rook(Piece):
 
-    def __init__(self, board, column, row):
+    def __init__(self, board, row, column):
 
-        self.board = board
-        self.column = column
-        self.row = row
+        Piece.__init__(self, board, row, column)
+
         self.type = "Rook"
-        self.moves = moves
 
     def moves(self, board, column, row):
         
