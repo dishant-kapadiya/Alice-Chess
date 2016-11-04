@@ -6,7 +6,7 @@ class King(Piece):
 
         Piece.__init__(self, board, row, column)
 
-        self.type = "King"
+        self.type = "K"
 
     def moves(self, board, column, row):
         

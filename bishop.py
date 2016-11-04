@@ -6,7 +6,7 @@ class Bishop(Piece):
 
         Piece.__init__(self, board, row, column)
 
-        self.type = "Bishop"
+        self.type = "B"
 
     def moves(self, board, column, row):
         

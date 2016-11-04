@@ -6,7 +6,7 @@ class Queen(Piece):
 
         Piece.__init__(self, board, row, column)
 
-        self.type = "Queen"
+        self.type = "Q"
 
     def moves(self, board, column, row):
         

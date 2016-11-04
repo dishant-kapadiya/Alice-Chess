@@ -6,7 +6,7 @@ class Knight(Piece):
 
         Piece.__init__(self, board, row, column)
 
-        self.type = "Knight"
+        self.type = "N"
 
     def moves(self, board, column, row):
         

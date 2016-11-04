@@ -2,6 +2,9 @@
 
 import random
 import sys
+import json
+
+from game import Game
 
 # class for grammer to generate player messages
 # self.CFG is a dictionary which stores values based on the Non-Terminal head of grammer
@@ -41,6 +44,9 @@ def generate_sentence(symbol, CFG):
 if __name__ == '__main__':
     end = False
     grammer = Message_Grammer()
+
+    game = Game()
+
     while not end:
         input_message = raw_input()
         # check if input message is assigning player a color
@@ -48,13 +54,24 @@ if __name__ == '__main__':
             # set color and skip outputting a message if necessary
             if "black" in input_message:
                 grammer.CFG['<player>'] = [('black',)]
+                my_team = game.players[0]
                 continue
             else:
                 grammer.CFG['<player>'] = [('white',)]
+                my_team = game.players[1]
+
+        elif "moves" in input_message:
+
+            game.receive_move(input_message)
 
         elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
             end = True
             sys.exit(0)
+
+        game_rep = game.get_game_state()
+
+        # Get all valid moves for my team
+        # valid_moves = my_team.get_valid_moves(game_rep)
 
         sys.stdout.write(generate_sentence('<playermsg>', grammer.CFG) + "\n")
         sentence = []
