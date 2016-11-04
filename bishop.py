@@ -5,9 +5,8 @@ class Bishop(Piece):
     def __init__(self, board, row, column):
 
         Piece.__init__(self, board, row, column)
-
         self.type = "B"
 
-    def moves(self, board, column, row):
+    def valid_moves(self, my_color, game_rep):
         
-        return None
+        return []

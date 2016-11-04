@@ -44,7 +44,7 @@ def generate_sentence(symbol, CFG):
 if __name__ == '__main__':
     end = False
     grammer = Message_Grammer()
-
+    my_team = None
     game = Game()
 
     while not end:
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         game_rep = game.get_game_state()
 
         # Get all valid moves for my team
-        # valid_moves = my_team.get_valid_moves(game_rep)
+        valid_moves = my_team.get_valid_moves(game_rep)
 
         sys.stdout.write(generate_sentence('<playermsg>', grammer.CFG) + "\n")
         sentence = []

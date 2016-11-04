@@ -76,6 +76,6 @@ class Player:
 
         for my_piece in self.arsenal:
             my_valid_moves = my_valid_moves + my_piece.valid_moves(self.color, game_rep)
-            print my_valid_moves
 
         # print my_valid_moves
+        return my_valid_moves
