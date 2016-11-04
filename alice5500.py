@@ -2,7 +2,16 @@
 
 import random
 import sys
-import json
+
+from player import Player
+from pawn import Pawn
+from rook import Rook
+from knight import Knight
+from bishop import Bishop
+from queen import Queen
+from king import King
+
+
 
 from game import Game
 
@@ -41,6 +50,42 @@ def generate_sentence(symbol, CFG):
     return "".join(sentence)
 
 
+def evaluate_game_state(my_team, other_team):
+    my_arsenal = my_team.arsenal
+    other_arsenal = other_team.arsenal
+
+    # print my_arsenal
+    # print other_arsenal
+    my_score = evaluate_arsenal(my_arsenal)
+    other_score = evaluate_arsenal(other_arsenal)
+
+    return my_score - other_score
+
+def evaluate_arsenal(arsenal):
+    score = 0
+    for piece in arsenal:
+        if isinstance(piece, Pawn):
+            score += 1
+
+        if isinstance(piece, Knight):
+            score += 5
+
+        if isinstance(piece, Bishop):
+            score += 6
+
+        if isinstance(piece, Rook):
+            score += 7
+
+        if isinstance(piece, Queen):
+            score += 9
+
+        if isinstance(piece, King):
+            score += 10
+    return score
+
+
+`
+
 if __name__ == '__main__':
     end = False
     grammer = Message_Grammer()
@@ -68,6 +113,9 @@ if __name__ == '__main__':
             end = True
             sys.exit(0)
 
+        other_team = game.players[0] if my_team != game.players[0] else game.players[1]
+        print evaluate_game_state(game, my_team, other_team)
+
         game_rep = game.get_game_state()
 
         # Get all valid moves for my team
@@ -77,3 +125,4 @@ if __name__ == '__main__':
         sentence = []
         sys.stdin.flush()
         sys.stdout.flush()
+
