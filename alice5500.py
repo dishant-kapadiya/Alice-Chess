@@ -2,7 +2,15 @@
 
 import random
 import sys
-import json
+
+from player import Player
+from pawn import Pawn
+from rook import Rook
+from knight import Knight
+from bishop import Bishop
+from queen import Queen
+from king import King
+
 
 from game import Game
 
@@ -40,40 +48,83 @@ def generate_sentence(symbol, CFG):
 
     return "".join(sentence)
 
+def generate_move_sentence(param):
+    return "{0} moves {1} from {2} {3} to {4}\n".format(param[0], param[1], str(param[2]), param[3], param[4])
+
+
+def evaluate_game_state(my_team, other_team):
+    my_arsenal = my_team.arsenal
+    other_arsenal = other_team.arsenal
+
+    # print my_arsenal
+    # print other_arsenal
+    my_score = evaluate_arsenal(my_arsenal)
+    other_score = evaluate_arsenal(other_arsenal)
+
+    return my_score - other_score
+
+def evaluate_arsenal(arsenal):
+    score = 0
+    for piece in arsenal:
+        if isinstance(piece, Pawn):
+            score += 1
+
+        if isinstance(piece, Knight):
+            score += 5
+
+        if isinstance(piece, Bishop):
+            score += 6
+
+        if isinstance(piece, Rook):
+            score += 7
+
+        if isinstance(piece, Queen):
+            score += 9
+
+        if isinstance(piece, King):
+            score += 10
+    return score
+
+global my_team
 
 if __name__ == '__main__':
     end = False
     grammer = Message_Grammer()
-    my_team = None
     game = Game()
-
+    my_team_color = None
+    msg_count = 0
     while not end:
         input_message = raw_input()
         # check if input message is assigning player a color
         if "you are " in input_message:
             # set color and skip outputting a message if necessary
             if "black" in input_message:
-                grammer.CFG['<player>'] = [('black',)]
+                my_team_color = 'black'
                 my_team = game.players[0]
                 continue
             else:
-                grammer.CFG['<player>'] = [('white',)]
+                my_team_color = 'white'
                 my_team = game.players[1]
 
         elif "moves" in input_message:
-
             game.receive_move(input_message)
+            game_rep = game.get_game_state()
+            valid_moves = my_team.get_valid_moves(game_rep)
+            move = valid_moves[random.randrange(len(valid_moves))]
+            sys.stdout.write(generate_move_sentence([my_team_color] + list(move)))
 
         elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
             end = True
             sys.exit(0)
 
-        game_rep = game.get_game_state()
+        elif " offers draw" in input_message:
+            sys.stdout.write(my_team_color + " accepts draw\n")
 
-        # Get all valid moves for my team
-        valid_moves = my_team.get_valid_moves(game_rep)
+        elif msg_count > 10:
+            sys.stdout.write(my_team_color + " surrenders\n")
 
-        sys.stdout.write(generate_sentence('<playermsg>', grammer.CFG) + "\n")
-        sentence = []
+        msg_count += 1
+        # other_team = game.players[0] if my_team != game.players[0] else game.players[1]
+        # print evaluate_game_state(my_team, other_team)
         sys.stdin.flush()
         sys.stdout.flush()
