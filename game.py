@@ -127,7 +127,7 @@ class Game:
             piece_tuple = tuple(piece_list)
             game_list.append(piece_tuple)
 
-        print game(game_list)
+        # print game(game_list)
         return alice_board
 
     def receive_move(self, msg):

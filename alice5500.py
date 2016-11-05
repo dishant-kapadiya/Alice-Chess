@@ -111,6 +111,7 @@ if __name__ == '__main__':
             game_rep = game.get_game_state()
             valid_moves = my_team.get_valid_moves(game_rep)
             move = valid_moves[random.randrange(len(valid_moves))]
+            game.receive_move(generate_move_sentence([my_team_color] + list(move)))
             sys.stdout.write(generate_move_sentence([my_team_color] + list(move)))
 
         elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
@@ -119,9 +120,13 @@ if __name__ == '__main__':
 
         elif " offers draw" in input_message:
             sys.stdout.write(my_team_color + " accepts draw\n")
+            end = True
+            sys.exit(0)
 
         elif msg_count > 10:
             sys.stdout.write(my_team_color + " surrenders\n")
+            end = True
+            sys.exit(0)
 
         msg_count += 1
         # other_team = game.players[0] if my_team != game.players[0] else game.players[1]
