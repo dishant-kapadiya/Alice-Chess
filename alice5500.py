@@ -96,7 +96,7 @@ if __name__ == '__main__':
     while not end:
         input_message = raw_input()
         # check if input message is assigning player a color
-        if msg_count > 20:
+        if msg_count > 8:
             sys.stdout.write(my_team_color + " surrenders\n")
             end = True
             sys.exit(0)
