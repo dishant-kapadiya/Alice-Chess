@@ -127,7 +127,7 @@ class Game:
             piece_tuple = tuple(piece_list)
             game_list.append(piece_tuple)
 
-        # print game(game_list)
+        print game(game_list)
         return alice_board
 
     def receive_move(self, msg):
@@ -142,9 +142,15 @@ class Game:
         move_from = msg_list[5]
         move_to = msg_list[7]
 
+        dest_board = move_board == "1" and 2 or 1
+        opponent_color = move_color == "white" and "b" or "w"
+
         for player in self.players:
             if player.color != move_color.capitalize():
-                continue
+                for piece in player.arsenal:
+                    if piece.board == int(move_board) and piece.row == int(move_to[1]) and piece.column == move_to[0]:
+                        player.remove_peice(piece)
+
             else:
                 for piece in player.arsenal:
                     if piece.type == move_piece and piece.board == int(move_board) and piece.column == move_from[0] and piece.row == int(move_from[1]):
