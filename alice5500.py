@@ -14,42 +14,12 @@ from king import King
 
 from game import Game
 
-# class for grammer to generate player messages
-# self.CFG is a dictionary which stores values based on the Non-Terminal head of grammer
-# the corresponding value is list of tuples. Each tuples describes a combination of Terminal
-# and Non-Terminal which can be used to generate a valid statement.
-class Message_Grammer:
-    def __init__(self, file="message-grammer"):
-        self.__grammer_file = file
-        self.CFG = dict()
-        lines = [line.rstrip('\n').split("~~~") for line in open(self.__grammer_file)]
-        lines[-1][-1] = '\n'
-
-        for line in lines:
-            if not line[0] == "":
-                if line[0] not in self.CFG.keys():
-                    self.CFG[line[0]] = list()
-                for temp in line[1:]:
-                    a = tuple(temp.split("~"))
-                    self.CFG[line[0]].append(a)
-
-#global variable for generated sentance
-sentence = []
-
-# function to generate a valid sentence based on the given grammer
-# creates a tree from the start symbol and explores it until no Non-Terminal is found in the sentance
-def generate_sentence(symbol, CFG):
-    if symbol not in CFG.keys():
-        sentence.append(symbol)
-        return
-
-    for transitional_element in CFG[symbol][random.randrange(0, len(CFG[symbol]))]:
-        generate_sentence(transitional_element, CFG)
-
-    return "".join(sentence)
-
 def generate_move_sentence(param):
-    return "{0} moves {1} from {2} {3} to {4}\n".format(param[0], param[1], str(param[2]), param[3], param[4])
+    return "{0} moves {1} from {2} {3} to {4}\n".format(param[0],
+                                                        param[1],
+                                                        str(param[2]),
+                                                        param[3],
+                                                        param[4])
 
 
 def evaluate_game_state(my_team, other_team):
@@ -89,7 +59,6 @@ global my_team
 
 if __name__ == '__main__':
     end = False
-    grammer = Message_Grammer()
     game = Game()
     my_team_color = None
     msg_count = 0
