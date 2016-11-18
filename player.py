@@ -66,9 +66,10 @@ class Player:
 
         self.arsenal.append(piece)
 
-    def remove_peice(self, piece):
+    def kill_peice(self, piece):
 
         self.arsenal.remove(piece)
+        self.martyrs.append(piece)
 
     def get_valid_moves(self, game_rep):
 

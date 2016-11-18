@@ -149,7 +149,7 @@ class Game:
             if player.color != move_color.capitalize():
                 for piece in player.arsenal:
                     if piece.board == int(move_board) and piece.row == int(move_to[1]) and piece.column == move_to[0]:
-                        player.remove_peice(piece)
+                        player.kill_peice(piece)
 
             else:
                 for piece in player.arsenal:
