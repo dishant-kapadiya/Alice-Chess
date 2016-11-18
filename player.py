@@ -17,48 +17,50 @@ class Player:
 
     def initialize_player(self):
 
+        columns = ["a", "b", "c", "d", "e", "f", "g", "h"]
+
         # Adding PAWNS
-        for pawn in range(0, 8):
+        for column in columns:
             if self.color == "White":
-                self.add_piece(Pawn(1, 1, pawn))
+                self.add_piece(Pawn(1, 2, column))
             else:
-                self.add_piece(Pawn(1, 6, pawn))
+                self.add_piece(Pawn(1, 7, column))
                 
         # Adding ROOKS
         if self.color == "White":
-            self.add_piece(Rook(1, 0, 0))
-            self.add_piece(Rook(1, 0, 7))
+            self.add_piece(Rook(1, 1, "a"))
+            self.add_piece(Rook(1, 1, "h"))
         else:
-            self.add_piece(Rook(1, 7, 0))
-            self.add_piece(Rook(1, 7, 7))
+            self.add_piece(Rook(1, 8, "a"))
+            self.add_piece(Rook(1, 8, "h"))
 
         # Adding KNIGHTS
         if self.color == "White":
-            self.add_piece(Knight(1, 0, 1))
-            self.add_piece(Knight(1, 0, 6))
+            self.add_piece(Knight(1, 1, "b"))
+            self.add_piece(Knight(1, 1, "g"))
         else:
-            self.add_piece(Knight(1, 7, 1))
-            self.add_piece(Knight(1, 7, 6))
+            self.add_piece(Knight(1, 8, "b"))
+            self.add_piece(Knight(1, 8, "g"))
 
         # Adding BISHOPS
         if self.color == "White":
-            self.add_piece(Bishop(1, 0, 2))
-            self.add_piece(Bishop(1, 0, 5))
+            self.add_piece(Bishop(1, 1, "c"))
+            self.add_piece(Bishop(1, 1, "f"))
         else:
-            self.add_piece(Bishop(1, 7, 2))
-            self.add_piece(Bishop(1, 7, 5))
+            self.add_piece(Bishop(1, 8, "c"))
+            self.add_piece(Bishop(1, 8, "f"))
 
         # Adding QUEEN
         if self.color == "White":
-            self.add_piece(Queen(1, 0, 3))
+            self.add_piece(Queen(1, 1, "d"))
         else:
-            self.add_piece(Queen(1, 7, 3))
+            self.add_piece(Queen(1, 8, "d"))
 
         # Adding KING
         if self.color == "White":
-            self.add_piece(King(1, 0, 4))
+            self.add_piece(King(1, 1, "e"))
         else:
-            self.add_piece(King(1, 7, 4))
+            self.add_piece(King(1, 8, "e"))
 
     def add_piece(self, piece):
 
@@ -68,6 +70,11 @@ class Player:
 
         self.arsenal.remove(piece)
 
-    def make_move(self, move):
+    def get_valid_moves(self, game_rep):
 
-        return None
+        my_valid_moves = []
+
+        for my_piece in self.arsenal:
+            my_valid_moves = my_valid_moves + my_piece.valid_moves(self.color, game_rep)
+
+        return my_valid_moves
