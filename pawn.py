@@ -39,7 +39,7 @@ class Pawn(Piece):
                     my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row - 1)))
 
                     # Starting pawn position can move two steps forward
-                    if self.board == 1 and self.row == 7:
+                    if self.board == 1 and self.row == 7 and game_rep[str(self.row - 2)][str(self.board)][self.column] == "":
                         my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row - 2)))
 
             except KeyError:
