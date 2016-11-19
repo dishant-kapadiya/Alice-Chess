@@ -1,5 +1,6 @@
 from piece import Piece
 
+
 class Queen(Piece):
 
     def __init__(self, board, row, column):
@@ -18,82 +19,106 @@ class Queen(Piece):
         u = []
 
         for i in range(1,8):
-            if ((self.row + i) <= 8):
+            if (self.row + i) <= 8:
                 # If piece found going upwards, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][self.column] != "":
                     break
 
-                u.append(("Q", self.board, self.column + str(self.row), self.column + str(self.row + i)))
+                u.append(("Q",
+                          self.board,
+                          self.column + str(self.row),
+                          self.column + str(self.row + i)))
 
         d = []
 
-        for i in range(1,8):
-            if ((self.row - i) >= 1):
+        for i in range(1, 8):
+            if (self.row - i) >= 1:
                 # If piece found going downwards, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][self.column] != "":
                     break
 
-                u.append(("Q", self.board, self.column + str(self.row), self.column + str(self.row - i)))
+                u.append(("Q",
+                          self.board,
+                          self.column + str(self.row),
+                          self.column + str(self.row - i)))
 
         r = []
 
-        for i in range(1,8):
-            if (columns_list.index(self.column) + i) <= 7 :
+        for i in range(1, 8):
+            if columns_list.index(self.column) + i <= 7:
                 # If piece found going right, break from loop
-                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) + 1]] != "":
+                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                u.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + i] + str(self.row)))
+                u.append(("Q",
+                          self.board,
+                          self.column + str(self.row),
+                          columns_list[columns_list.index(self.column) + i] + str(self.row)))
 
         l = []
 
-        for i in range(1,8):
-            if (columns_list.index(self.column) - i) >= 0 :
+        for i in range(1, 8):
+            if columns_list.index(self.column) - i >= 0:
                 # If piece found going left, break from loop
-                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) - 1]] != "":
+                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                u.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - i] + str(self.row)))
+                u.append(("Q",
+                          self.board,
+                          self.column + str(self.row),
+                          columns_list[columns_list.index(self.column) - i] + str(self.row)))
 
         ur = []
 
-        for i in range(1,8):
-            if ((self.row + i) <= 8 and (columns_list.index(self.column) + i) <= 7):
+        for i in range(1, 8):
+            if (self.row + i) <= 8 and (columns_list.index(self.column) + i) <= 7:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                ur.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + i] + str(self.row + i)))
+                ur.append(("Q",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) + i] + str(self.row + i)))
 
         ul = []
 
-        for i in range(1,8):
-            if ((self.row + i) <= 8 and (columns_list.index(self.column) - i) >= 0):
+        for i in range(1, 8):
+            if (self.row + i) <= 8 and (columns_list.index(self.column) - i) >= 0:
                 # If piece found going upward left, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                ul.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - i] + str(self.row + i)))
+                ul.append(("Q",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) - i] + str(self.row + i)))
 
         dr = []
 
-        for i in range(1,8):
-            if ((self.row - i) >= 1 and (columns_list.index(self.column) + i) <= 7):
+        for i in range(1, 8):
+            if (self.row - i) >= 1 and (columns_list.index(self.column) + i) <= 7:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                dr.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + i] + str(self.row - i)))
+                dr.append(("Q",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) + i] + str(self.row - i)))
 
         dl = []
 
-        for i in range(1,8):
-            if ((self.row - i) >= 1 and (columns_list.index(self.column) - i) >= 0):
+        for i in range(1, 8):
+            if (self.row - i) >= 1 and (columns_list.index(self.column) - i) >= 0:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                dl.append(("Q", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - i] + str(self.row - i)))
+                dl.append(("Q",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) - i] + str(self.row - i)))
         
         my_moves = u + d + r + l + ur + ul + dr + dl
 

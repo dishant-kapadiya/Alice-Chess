@@ -75,6 +75,7 @@ class Player:
 
         my_valid_moves = []
 
+        # TODO: handle situation for check. While in Check, prune those moves which doesn't save king
         for my_piece in self.arsenal:
             my_valid_moves = my_valid_moves + my_piece.valid_moves(self.color, game_rep)
 

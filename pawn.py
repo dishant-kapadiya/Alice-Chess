@@ -21,11 +21,19 @@ class Pawn(Piece):
                 # Check if the next row has a piece or not
                 if game_rep[str(self.row + 1)][str(self.board)][self.column] == "":
                     # All pawns can move one step forward
-                    my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row + 1)))
+                    my_moves.append(("P",
+                                     self.board,
+                                     self.column + str(self.row),
+                                     self.column + str(self.row + 1)))
 
                     # Starting pawn position can move two steps forward
-                    if self.board == 1 and self.row == 2:
-                        my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row + 2)))
+                    if self.board == 1 \
+                            and self.row == 2 \
+                            and game_rep[str(self.row + 2)][str(self.board)][self.column] == "":
+                        my_moves.append(("P",
+                                         self.board,
+                                         self.column + str(self.row),
+                                         self.column + str(self.row + 2)))
 
             except KeyError:
                 pass
@@ -36,11 +44,19 @@ class Pawn(Piece):
                 # Check if the next row has a piece or not
                 if game_rep[str(self.row - 1)][str(self.board)][self.column] == "":
                     # All pawns can move one step forward
-                    my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row - 1)))
+                    my_moves.append(("P",
+                                     self.board,
+                                     self.column + str(self.row),
+                                     self.column + str(self.row - 1)))
 
                     # Starting pawn position can move two steps forward
-                    if self.board == 1 and self.row == 7 and game_rep[str(self.row - 2)][str(self.board)][self.column] == "":
-                        my_moves.append(("P", self.board, self.column + str(self.row), self.column + str(self.row - 2)))
+                    if self.board == 1 \
+                            and self.row == 7 \
+                            and game_rep[str(self.row - 2)][str(self.board)][self.column] == "":
+                        my_moves.append(("P",
+                                         self.board,
+                                         self.column + str(self.row),
+                                         self.column + str(self.row - 2)))
 
             except KeyError:
                 pass

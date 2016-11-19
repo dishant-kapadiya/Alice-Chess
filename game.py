@@ -93,27 +93,51 @@ class Game:
                             alice_board_color = "b"
 
                         for piece in player.arsenal:
-                            if (piece.type == "P" and piece.row == row and piece.board == board and piece.column == column):
+
+                            if piece.type == "P" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 6)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
-                            elif (piece.type == "R" and piece.row == row and piece.board == board and piece.column == column):
+
+                            elif piece.type == "R" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 3)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
-                            elif (piece.type == "N" and piece.row == row and piece.board == board and piece.column == column):
+
+                            elif piece.type == "N" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 5)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
-                            elif (piece.type == "B" and piece.row == row and piece.board == board and piece.column == column):
+
+                            elif piece.type == "B" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 4)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
-                            elif (piece.type == "Q" and piece.row == row and piece.board == board and piece.column == column):
+
+                            elif piece.type == "Q" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 2)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
-                            elif (piece.type == "K" and piece.row == row and piece.board == board and piece.column == column):
+
+                            elif piece.type == "K" \
+                                    and piece.row == row \
+                                    and piece.board == board \
+                                    and piece.column == column:
                                 piece_list.append(indent_no + 1)
                                 alice_board[str(row)][str(board)][column] = alice_board_color + piece.type
                                 flag_piece = True
@@ -123,7 +147,7 @@ class Game:
                     if flag_piece == False:
                         piece_list.append(0)
                         alice_board[str(row)][str(board)][column] = ""
-            
+
             piece_tuple = tuple(piece_list)
             game_list.append(piece_tuple)
 
@@ -135,7 +159,7 @@ class Game:
         msg_list = msg.split()
 
         len(msg_list) == 8
-        
+
         move_color = msg_list[0]
         move_piece = msg_list[2]
         move_board = msg_list[4]
@@ -148,10 +172,15 @@ class Game:
         for player in self.players:
             if player.color != move_color.capitalize():
                 for piece in player.arsenal:
-                    if piece.board == int(move_board) and piece.row == int(move_to[1]) and piece.column == move_to[0]:
+                    if piece.board == int(move_board)\
+                            and piece.row == int(move_to[1])\
+                            and piece.column == move_to[0]:
                         player.kill_peice(piece)
 
             else:
                 for piece in player.arsenal:
-                    if piece.type == move_piece and piece.board == int(move_board) and piece.column == move_from[0] and piece.row == int(move_from[1]):
+                    if piece.type == move_piece \
+                            and piece.board == int(move_board) \
+                            and piece.column == move_from[0] \
+                            and piece.row == int(move_from[1]):
                         piece.make_move(move_to)

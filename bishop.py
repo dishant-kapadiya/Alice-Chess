@@ -17,42 +17,54 @@ class Bishop(Piece):
 
         ur = []
         for i in range(1,8):
-            if ((self.row + i) <= 8 and (columns_list.index(self.column) + i) <= 7):
+            if (self.row + i) <= 8 and (columns_list.index(self.column) + i) <= 7:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                ur.append(("B", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + i] + str(self.row + i)))
+                ur.append(("B",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) + i] + str(self.row + i)))
 
         ul = []
 
         for i in range(1,8):
-            if ((self.row + i) <= 8 and (columns_list.index(self.column) - i) >= 0):
+            if (self.row + i) <= 8 and (columns_list.index(self.column) - i) >= 0:
                 # If piece found going upward left, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                ul.append(("B", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - i] + str(self.row + i)))
+                ul.append(("B",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) - i] + str(self.row + i)))
 
         dr = []
 
         for i in range(1,8):
-            if ((self.row - i) >= 1 and (columns_list.index(self.column) + i) <= 7):
+            if (self.row - i) >= 1 and (columns_list.index(self.column) + i) <= 7:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                dr.append(("B", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + i] + str(self.row - i)))
+                dr.append(("B",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) + i] + str(self.row - i)))
 
         dl = []
 
         for i in range(1,8):
-            if ((self.row - i) >= 1 and (columns_list.index(self.column) - i) >= 0):
+            if (self.row - i) >= 1 and (columns_list.index(self.column) - i) >= 0:
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                dl.append(("B", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - i] + str(self.row - i)))
+                dl.append(("B",
+                           self.board,
+                           self.column + str(self.row),
+                           columns_list[columns_list.index(self.column) - i] + str(self.row - i)))
 
         my_moves = ur + ul + dr + dl
         

@@ -23,7 +23,10 @@ class Rook(Piece):
                 if game_rep[str(self.row + i)][str(self.board)][self.column] != "":
                     break
 
-                u.append(("R", self.board, self.column + str(self.row), self.column + str(self.row + i)))
+                u.append(("R",
+                          self.board,
+                          self.column + str(self.row),
+                          self.column + str(self.row + i)))
 
         d = []
 
@@ -33,27 +36,36 @@ class Rook(Piece):
                 if game_rep[str(self.row - i)][str(self.board)][self.column] != "":
                     break
 
-                u.append(("R", self.board, self.column + str(self.row), self.column + str(self.row - i)))
+                u.append(("R",
+                          self.board,
+                          self.column + str(self.row),
+                          self.column + str(self.row - i)))
 
         r = []
 
         for i in range(1,8):
             if (columns_list.index(self.column) + i) <= 7 :
                 # If piece found going right, break from loop
-                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) + 1]] != "":
+                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
 
-                u.append(("R", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) + 1] + str(self.row)))
+                u.append(("R",
+                          self.board,
+                          self.column + str(self.row),
+                          columns_list[columns_list.index(self.column) + 1] + str(self.row)))
 
         l = []
 
         for i in range(1,8):
             if (columns_list.index(self.column) - i) >= 0 :
                 # If piece found going left, break from loop
-                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) - 1]] != "":
+                if game_rep[str(self.row)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
 
-                u.append(("R", self.board, self.column + str(self.row), columns_list[columns_list.index(self.column) - 1] + str(self.row)))
+                u.append(("R",
+                          self.board,
+                          self.column + str(self.row),
+                          columns_list[columns_list.index(self.column) - 1] + str(self.row)))
         
         my_moves = u + d + r + l
         
