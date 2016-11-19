@@ -16,9 +16,8 @@ class Bishop(Piece):
         columns_list = ["a", "b", "c", "d", "e", "f", "g", "h"]
 
         ur = []
-
-        for i in range(1,7):
-            if ((self.row + i) < 8 and (columns_list.index(self.column) + i) < 7):
+        for i in range(1,8):
+            if ((self.row + i) <= 8 and (columns_list.index(self.column) + i) <= 7):
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
@@ -27,8 +26,8 @@ class Bishop(Piece):
 
         ul = []
 
-        for i in range(1,7):
-            if ((self.row + i) < 8 and (columns_list.index(self.column) - i) > 0):
+        for i in range(1,8):
+            if ((self.row + i) <= 8 and (columns_list.index(self.column) - i) >= 0):
                 # If piece found going upward left, break from loop
                 if game_rep[str(self.row + i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
@@ -37,8 +36,8 @@ class Bishop(Piece):
 
         dr = []
 
-        for i in range(1,7):
-            if ((self.row - i) > 1 and (columns_list.index(self.column) + i) < 7):
+        for i in range(1,8):
+            if ((self.row - i) >= 1 and (columns_list.index(self.column) + i) <= 7):
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) + i]] != "":
                     break
@@ -47,8 +46,8 @@ class Bishop(Piece):
 
         dl = []
 
-        for i in range(1,7):
-            if ((self.row - i) > 1 and (columns_list.index(self.column) - i) > 0):
+        for i in range(1,8):
+            if ((self.row - i) >= 1 and (columns_list.index(self.column) - i) >= 0):
                 # If piece found going upward right, break from loop
                 if game_rep[str(self.row - i)][str(self.board)][columns_list[columns_list.index(self.column) - i]] != "":
                     break
@@ -65,5 +64,6 @@ class Bishop(Piece):
             destination = move[-1]
             if game_rep[destination[1]][str(dest_board)][destination[0]] == "":
                 my_final_moves.append(move)
-        
+
+        # print my_final_moves
         return my_final_moves

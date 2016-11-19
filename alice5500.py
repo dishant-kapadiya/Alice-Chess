@@ -80,7 +80,7 @@ if __name__ == '__main__':
                 my_team_color = 'white'
                 my_team = game.players[1]
                 game_rep = game.get_game_state()
-                # valid_moves = my_team.get_valid_moves(game_rep)
+                valid_moves = my_team.get_valid_moves(game_rep)
                 # move = valid_moves[random.randrange(len(valid_moves))]
                 # game.receive_move(generate_move_sentence([my_team_color] + list(move)))
                 move = game.receive_move(raw_input())
@@ -91,7 +91,7 @@ if __name__ == '__main__':
         elif "moves" in input_message:
             game.receive_move(input_message)
             game_rep = game.get_game_state()
-            # valid_moves = my_team.get_valid_moves(game_rep)
+            valid_moves = my_team.get_valid_moves(game_rep)
             # move = valid_moves[random.randrange(len(valid_moves))]
             # game.receive_move(generate_move_sentence([my_team_color] + list(move)))
             move = game.receive_move(raw_input())
