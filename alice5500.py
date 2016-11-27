@@ -1,5 +1,7 @@
 """Entry point in the program and is used as a player"""
 from enum import Enum
+import sys
+import random
 
 class PlayerColor(Enum):
     White = "white"
@@ -794,3 +796,102 @@ class OccupiedTile(Tile):
     def get_piece(self):
         return self.piece
 
+
+def generate_move_sentence(param):
+    return "{0} moves {1} from {2} {3} to {4}\n".format(param[0],
+                                                        param[1],
+                                                        str(param[2]),
+                                                        param[3],
+                                                        param[4])
+
+
+def int_to_alg(num):
+    file = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    row = 8 - int(num / 8)
+    column = file[num % 8]
+    return str(column) + str(row)
+
+def alg_to_int(notation):
+    file = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+    return file[notation[0]] + (8 - int(notation[1])) * 8
+
+def find_move(moves, piece, source, destination):
+    for move in moves:
+        if str(move.piece).upper() == piece \
+                and move.piece.position == alg_to_int(source) \
+                and move.destination == alg_to_int(destination):
+            return move
+
+
+# for i in range(64):
+#     print "{0} := {1} := {2}".format(i, int_to_alg(i), alg_to_int(int_to_alg(i)))
+
+if __name__ == '__main__':
+    end = False
+    board = Board.create_standard_board()
+    my_team_color = None
+    # msg_count = 0
+    while not end:
+        input_message = raw_input()
+        # if msg_count > 8:
+        #     sys.stdout.write(my_team_color + " surrenders\n")
+        #     end = True
+        #     sys.exit(0)
+
+        if "you are " in input_message:
+            # set color and skip outputting a message if necessary
+            if "black" in input_message:
+                my_team_color = PlayerColor.Black
+                my_team = board.black_player
+                continue
+            else:
+                # print "reached here"
+                my_team_color = PlayerColor.White
+                my_team = board.white_player
+                # game_rep = game.get_game_state()
+                valid_moves = my_team.legal_moves
+                move = valid_moves[random.randrange(len(valid_moves))]
+                # print move
+                board = my_team.make_move(move).transition_board
+                sys.stdout.write(generate_move_sentence([my_team_color.value, str(move.piece), 1, int_to_alg(move.piece.position), int_to_alg(move.destination)]))
+
+        elif "moves" in input_message:
+        # else:
+            message = input_message.split()
+            if board.current_player.get_color().value == message[0]:
+                move = find_move(board.current_player.legal_moves, message[2], message[5], message[7])
+                # move = board.current_player.legal_moves[random.randrange(len(board.current_player.legal_moves))]
+                # sys.stdout.write(generate_move_sentence(
+                #     [board.current_player.get_color().value, str(move.piece), 1, int_to_alg(move.piece.position),
+                #      int_to_alg(move.destination)]))
+                move_transition = board.current_player.make_move(move)
+                opponents_board = move_transition.transition_board
+                if opponents_board.current_player.get_color() == my_team.get_color():
+                    my_team = opponents_board.current_player
+                    available_moves = opponents_board.current_player.legal_moves
+                    # print available_moves
+                    move = available_moves[random.randrange(len(available_moves))]
+                    move_transition = my_team.make_move(move)
+                    board = move_transition.transition_board
+                    sys.stdout.write(generate_move_sentence(
+                        [my_team_color.value, str(move.piece), 1,
+                         int_to_alg(move.piece.position), int_to_alg(move.destination)]))
+                else:
+                    sys.stdout.write(my_team_color.value + " surrenders\n")
+
+        print board
+
+        # elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
+        #     end = True
+        #     sys.exit(0)
+        #
+        # elif " offers draw" in input_message:
+        #     sys.stdout.write(my_team_color + " accepts draw\n")
+        #     end = True
+        #     sys.exit(0)
+        #
+        # # msg_count += 1
+        # # other_team = game.players[0] if my_team != game.players[0] else game.players[1]
+        # # print evaluate_game_state(my_team, other_team)
+        # sys.stdin.flush()
+        # sys.stdout.flush()
