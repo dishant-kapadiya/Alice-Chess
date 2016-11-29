@@ -1,4 +1,6 @@
 from enum import Enum
+import sys
+import random
 
 
 class Position:
@@ -9,7 +11,6 @@ class Position:
     def __eq__(self, other):
         if not isinstance(other, Position):
             return False
-
         return self.board == other.board and self.index == other.index
 
     def __add__(self, other):
@@ -29,7 +30,7 @@ class Position:
     def __repr__(self):
         return self.board.value + "(" + Position.int_to_alg(self.index) + ")"
 
-    def same_position_in_next_board(self):
+    def same_position_in_next_board(self): #flip_board can be a name
         return Position(self.board.next_board(), self.index)
 
     @staticmethod
@@ -52,6 +53,9 @@ class BoardIndex(Enum):
     def next_board(self):
         return BoardIndex.Board_One if self.value == "2" else BoardIndex.Board_Two
 
+    def __str__(self):
+        return BoardIndex.Board_One.value if self == BoardIndex.Board_One else BoardIndex.Board_Two.value
+
 
 class PlayerColor(Enum):
     White = "white"
@@ -60,6 +64,7 @@ class PlayerColor(Enum):
     @staticmethod
     def opponent(color, white_player, black_player):
         return black_player if color == PlayerColor.White else white_player
+
 
 class BoardProperties:
     NUM_TILES = 64
@@ -173,12 +178,51 @@ class Board:
         return board_tiles
 
     def get_tile(self, coordinate):
-        game_board = None
         if coordinate.board == BoardIndex.Board_One:
             game_board = self.game_board1
         else:
             game_board = self.game_board2
         return game_board[coordinate.index]
+
+    @staticmethod
+    def create_standard_board():
+        builder = BoardBuilder()
+        # Black Arsenal
+        builder.set_piece(Rook(Position(BoardIndex.Board_One, 0), PlayerColor.Black))
+        builder.set_piece(Knight(Position(BoardIndex.Board_One, 1), PlayerColor.Black))
+        builder.set_piece(Bishop(Position(BoardIndex.Board_One, 2), PlayerColor.Black))
+        builder.set_piece(Queen(Position(BoardIndex.Board_One, 3), PlayerColor.Black))
+        builder.set_piece(King(Position(BoardIndex.Board_One, 4), PlayerColor.Black))
+        builder.set_piece(Bishop(Position(BoardIndex.Board_One, 5), PlayerColor.Black))
+        builder.set_piece(Knight(Position(BoardIndex.Board_One, 6), PlayerColor.Black))
+        builder.set_piece(Rook(Position(BoardIndex.Board_One, 7), PlayerColor.Black))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 8), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 9), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 10), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 11), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 12), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 13), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 14), PlayerColor.Black, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 15), PlayerColor.Black, True))
+        # White Arsenal
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 48), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 49), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 50), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 51), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 52), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 53), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 54), PlayerColor.White, True))
+        builder.set_piece(Pawn(Position(BoardIndex.Board_One, 55), PlayerColor.White, True))
+        builder.set_piece(Rook(Position(BoardIndex.Board_One, 56), PlayerColor.White))
+        builder.set_piece(Knight(Position(BoardIndex.Board_One, 57), PlayerColor.White))
+        builder.set_piece(Bishop(Position(BoardIndex.Board_One, 58), PlayerColor.White))
+        builder.set_piece(Queen(Position(BoardIndex.Board_One, 59), PlayerColor.White))
+        builder.set_piece(King(Position(BoardIndex.Board_One, 60), PlayerColor.White))
+        builder.set_piece(Bishop(Position(BoardIndex.Board_One, 61), PlayerColor.White))
+        builder.set_piece(Knight(Position(BoardIndex.Board_One, 62), PlayerColor.White))
+        builder.set_piece(Rook(Position(BoardIndex.Board_One, 63), PlayerColor.White))
+        builder.set_next_move_maker(PlayerColor.Black)
+        return builder.build()
 
     @staticmethod
     def calculate_active_piece(gameboard, color):
@@ -676,15 +720,21 @@ class Move:
         return self.piece.position
 
     def is_attack(self):
-        return False
+        pass
 
     def attacked_piece(self):
-        return None
+        pass
 
 
 class MajorMove(Move):
     def __init__(self, board, piece, dest):
         Move.__init__(self, board, piece, dest)
+
+    def is_attack(self):
+        return False
+
+    def attacked_piece(self):
+        return None
 
 
 class AttackMove(Move):
@@ -819,26 +869,104 @@ class BlackPlayer(Player):
     def get_opponent(self):
         return self.board.white_player
 
+########################################################################################################################
+
+"""Generating sequence of meanigful messages"""
+
+# """
 
 
-builder = BoardBuilder()
-# builder.set_piece(Rook(Position(BoardIndex.Board_One, 7), PlayerColor.White))
-# builder.set_piece(King(Position(BoardIndex.Board_One, 35), PlayerColor.White))
-# builder.set_piece(Queen(Position(BoardIndex.Board_One, 4), PlayerColor.White))
-# builder.set_piece(Knight(Position(BoardIndex.Board_One, 6), PlayerColor.White))
-# builder.set_piece(Bishop(Position(BoardIndex.Board_One, 5), PlayerColor.White))
-# builder.set_piece(Knight(Position(BoardIndex.Board_Two, 12), PlayerColor.Black))
-# builder.set_piece(Bishop(Position(BoardIndex.Board_One, 23), PlayerColor.Black))
-builder.set_piece(Pawn(Position(BoardIndex.Board_One, 48), PlayerColor.White, is_first_move=True))
-builder.set_next_move_maker(PlayerColor.Black)
-board = builder.build()
-print board
-print
-for temp in board.white_legal_moves:
-    print temp
-move = board.current_player.legal_moves[0]
-print "Chosen Move: ", move
-temp = board.current_player.make_move(move).transition_board
-print temp
-print temp.current_player.legal_moves
+def generate_move_sentence(move):
+    list_of_values = list()
+    list_of_values.append(my_team_color)
+    list_of_values.append("moves")
+    list_of_values.append(str(move.piece).upper())
+    list_of_values.append("from")
+    list_of_values.append(move.piece.position.board.value)
+    list_of_values.append(Position.int_to_alg(move.piece.position.index))
+    list_of_values.append("to")
+    list_of_values.append(Position.int_to_alg(move.destination.index))
+    return " ".join(list_of_values) + "\n"
 
+
+def choose_move():
+    player = game.current_player
+    player_legal_moves = player.legal_moves
+    #TODO: come up with better stratagies for choosing a move
+    move_index = random.randrange(len(player_legal_moves))
+    return player_legal_moves[move_index]
+
+
+def make_move(move):
+    move_transition = game.current_player.make_move(move)
+    if not move_transition.move_status == MoveStatus.DONE:
+        sys.stdout.write(my_team + " surrenders\n")
+        sys.exit(0)
+    return move_transition.transition_board
+
+
+def find_move(moves, piece, board, source, destination):
+    for move in moves:
+        if str(move.piece).upper() == piece \
+                and move.piece.position.board.value == board \
+                and move.piece.position.index == Position.alg_to_int(source) \
+                and move.destination.index == Position.alg_to_int(destination):
+            return move
+
+
+
+
+
+
+
+
+
+end = False
+game = Board.create_standard_board()
+my_team_color = None
+my_team = None
+while not end:
+    input_message = raw_input()
+
+    if "you are " in input_message:
+        # set color and skip outputting a message if necessary
+        if "black" in input_message:
+            my_team_color = PlayerColor.Black.value
+            my_team = game.black_player
+            continue
+        else:
+            my_team_color = PlayerColor.White.value
+            my_team = game.white_player
+            move = choose_move()
+            game = make_move(move)
+            sys.stdout.write(generate_move_sentence(move))
+
+    elif "moves" in input_message:
+        message = input_message.split()
+        assert game.current_player.get_color().value == message[0]
+        move = find_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
+        game = make_move(move)
+        if game.current_player.get_color() == my_team.get_color():
+            move = choose_move()
+            game = make_move(move)
+            sys.stdout.write(generate_move_sentence(move))
+        else:
+            sys.stdout.write(my_team_color.value + " surrenders\n")
+    print game
+
+    # elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
+    #     end = True
+    #     sys.exit(0)
+    #
+    # elif " offers draw" in input_message:
+    #     sys.stdout.write(my_team_color + " accepts draw\n")
+    #     end = True
+    #     sys.exit(0)
+    #
+    # # msg_count += 1
+    # # other_team = game.players[0] if my_team != game.players[0] else game.players[1]
+    # # print evaluate_game_state(my_team, other_team)
+    # sys.stdin.flush()
+    # sys.stdout.flush()
+
+# """
