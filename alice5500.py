@@ -913,14 +913,6 @@ def find_move(moves, piece, board, source, destination):
                 and move.destination.index == Position.alg_to_int(destination):
             return move
 
-
-
-
-
-
-
-
-
 end = False
 game = Board.create_standard_board()
 my_team_color = None
@@ -952,21 +944,15 @@ while not end:
             sys.stdout.write(generate_move_sentence(move))
         else:
             sys.stdout.write(my_team_color.value + " surrenders\n")
-    print game
 
-    # elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
-    #     end = True
-    #     sys.exit(0)
-    #
-    # elif " offers draw" in input_message:
-    #     sys.stdout.write(my_team_color + " accepts draw\n")
-    #     end = True
-    #     sys.exit(0)
-    #
-    # # msg_count += 1
-    # # other_team = game.players[0] if my_team != game.players[0] else game.players[1]
-    # # print evaluate_game_state(my_team, other_team)
-    # sys.stdin.flush()
-    # sys.stdout.flush()
+    elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
+        end = True
+        sys.exit(0)
 
-# """
+    elif " offers draw" in input_message:
+        sys.stdout.write(my_team_color + " accepts draw\n")
+        end = True
+        sys.exit(0)
+
+    sys.stdin.flush()
+    sys.stdout.flush()
