@@ -28,10 +28,10 @@ class Position:
             raise Exception("Value Error: " + str(other) + " cannot be added.")
 
     def __repr__(self):
-        return self.board.value + "(" + Position.int_to_alg(self.index) + ")"
+        return self.board + "(" + Position.int_to_alg(self.index) + ")"
 
     def same_position_in_next_board(self): #flip_board can be a name
-        return Position(self.board.next_board(), self.index)
+        return Position(BoardIndex.next_board(self.board), self.index)
 
     @staticmethod
     def int_to_alg(num):
@@ -46,20 +46,24 @@ class Position:
         return chess_file[notation[0]] + (8 - int(notation[1])) * 8
 
 
-class BoardIndex(Enum):
+class BoardIndex:
     Board_One = "1"
     Board_Two = "2"
 
-    def next_board(self):
-        return BoardIndex.Board_One if self.value == "2" else BoardIndex.Board_Two
+    def __init__(self):
+        pass
 
-    def __str__(self):
-        return BoardIndex.Board_One.value if self == BoardIndex.Board_One else BoardIndex.Board_Two.value
+    @staticmethod
+    def next_board(value):
+        return BoardIndex.Board_One if value == "2" else BoardIndex.Board_Two
 
 
-class PlayerColor(Enum):
+class PlayerColor:
     White = "white"
     Black = "black"
+
+    def __init__(self):
+        pass
 
     @staticmethod
     def opponent(color, white_player, black_player):
@@ -97,7 +101,7 @@ class BoardProperties:
     @staticmethod
     def is_vaild_tile_coordinate(new_coordinate):
         return 0 <= new_coordinate.index < BoardProperties.NUM_TILES and \
-               1 <= int(new_coordinate.board.value) <= BoardProperties.NUM_BOARD
+               1 <= int(new_coordinate.board) <= BoardProperties.NUM_BOARD
 
 BoardProperties = BoardProperties()
 
@@ -337,7 +341,7 @@ class King(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in King.valid_move_offsets:
-            destination_position = Position(self.position.board.next_board(),
+            destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + offset)
             if BoardProperties.is_vaild_tile_coordinate(destination_position):
                 if King.in_first_column_exception(offset, self.position.index) or \
@@ -512,7 +516,7 @@ class Knight(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in Knight.valid_move_offsets:
-            destination_position = Position(self.position.board.next_board(),
+            destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + offset)
             if BoardProperties.is_vaild_tile_coordinate(destination_position):
                 if Knight.in_first_column_exception(offset, self.position.index) or \
@@ -647,21 +651,21 @@ class Pawn(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in Pawn.valid_move_offsets:
-            destination_position = Position(self.position.board.next_board(),
+            destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + (offset * self.get_direction()))
             if not BoardProperties.is_vaild_tile_coordinate(destination_position):
                 continue
             if not game_config.get_tile(destination_position).is_occupied():
                 tile_in_this_board = Position.same_position_in_next_board(destination_position)
                 if offset == 8 and not game_config.get_tile(tile_in_this_board).is_occupied():
-                    #TODO: Possibility of promotion. Needs better code(deal with Promotion)
+                    # TODO: Possibility of promotion. Needs better code to deal with Promotion
                     list_of_moves.append(MajorMove(game_config, self, destination_position))
                 elif offset == 16 and self.is_first_move:
                     if (self.color == PlayerColor.Black and
                             BoardProperties.SECOND_ROW[self.position.index]) \
                         or (self.color == PlayerColor.White and
                             BoardProperties.SEVENTH_ROW[self.position.index]):
-                        first_tile_position = Position(self.position.board.next_board(),
+                        first_tile_position = Position(BoardIndex.next_board(self.position.board),
                                                        self.position.index + (self.get_direction() * 8))
                         if not (game_config.get_tile(first_tile_position).is_occupied() or
                                 game_config.get_tile(tile_in_this_board).is_occupied()):
@@ -764,7 +768,7 @@ class AttackMove(Move):
         return super.__eq__(other) and self.attacked_piece == other.attacked_piece
 
 
-class MoveStatus(Enum):
+class MoveStatus():
     DONE = "Done"
     ILLEGAL_MOVE = "Illegal Move"
     LEAVES_KING_IN_CHECK = "Leaves King in check"
@@ -794,7 +798,7 @@ class Player:
     def calculate_attacks_on_tile(tile, opponents_moves):
         attacking_moves = []
         for move in opponents_moves:
-            if tile == move.destination:
+            if tile == Position.same_position_in_next_board(move.destination):
                 attacking_moves.append(move)
         return attacking_moves
 
@@ -882,7 +886,7 @@ def generate_move_sentence(move):
     list_of_values.append("moves")
     list_of_values.append(str(move.piece).upper())
     list_of_values.append("from")
-    list_of_values.append(move.piece.position.board.value)
+    list_of_values.append(move.piece.position.board)
     list_of_values.append(Position.int_to_alg(move.piece.position.index))
     list_of_values.append("to")
     list_of_values.append(Position.int_to_alg(move.destination.index))
@@ -900,15 +904,15 @@ def choose_move():
 def make_move(move):
     move_transition = game.current_player.make_move(move)
     if not move_transition.move_status == MoveStatus.DONE:
-        sys.stdout.write(my_team + " surrenders\n")
+        sys.stdout.write(my_team_color + " surrenders\n")
         sys.exit(0)
     return move_transition.transition_board
 
 
-def find_move(moves, piece, board, source, destination):
+def text_to_move(moves, piece, board, source, destination):
     for move in moves:
         if str(move.piece).upper() == piece \
-                and move.piece.position.board.value == board \
+                and move.piece.position.board == board \
                 and move.piece.position.index == Position.alg_to_int(source) \
                 and move.destination.index == Position.alg_to_int(destination):
             return move
@@ -923,11 +927,10 @@ while not end:
     if "you are " in input_message:
         # set color and skip outputting a message if necessary
         if "black" in input_message:
-            my_team_color = PlayerColor.Black.value
+            my_team_color = PlayerColor.Black
             my_team = game.black_player
-            continue
         else:
-            my_team_color = PlayerColor.White.value
+            my_team_color = PlayerColor.White
             my_team = game.white_player
             move = choose_move()
             game = make_move(move)
@@ -935,15 +938,21 @@ while not end:
 
     elif "moves" in input_message:
         message = input_message.split()
-        assert game.current_player.get_color().value == message[0]
-        move = find_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
+        assert game.current_player.get_color() == message[0]
+        move = text_to_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
         game = make_move(move)
         if game.current_player.get_color() == my_team.get_color():
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
         else:
-            sys.stdout.write(my_team_color.value + " surrenders\n")
+            sys.stdout.write(my_team_color + " surrenders\n")
+        # print game
+        # message1 = raw_input()
+        # message1 = message1.split()
+        # assert game.current_player.get_color() == message1[0]
+        # move = text_to_move(game.current_player.legal_moves, message1[2], message1[4], message1[5], message1[7])
+        # game = make_move(move)
 
     elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
         end = True
@@ -953,6 +962,6 @@ while not end:
         sys.stdout.write(my_team_color + " accepts draw\n")
         end = True
         sys.exit(0)
-
+    print game
     sys.stdin.flush()
     sys.stdout.flush()
