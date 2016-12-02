@@ -1,7 +1,7 @@
 from enum import Enum
 import sys
 import random
-from aliceengine
+from aliceengine import *
 
 ########################################################################################################################
 
@@ -35,6 +35,7 @@ def make_move(move):
     move_transition = game.current_player.make_move(move)
     if not move_transition.move_status == MoveStatus.DONE:
         sys.stdout.write(my_team_color + " surrenders\n")
+        file.write("move_transition.move_status != MoveStatus.DONE")
         sys.exit(0)
     return move_transition.transition_board
 
@@ -71,18 +72,24 @@ while not end:
         assert game.current_player.get_color() == message[0]
         move = text_to_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
         game = make_move(move)
-        # if game.current_player.get_color() == my_team.get_color():
-        #     move = choose_move()
-        #     game = make_move(move)
-        #     sys.stdout.write(generate_move_sentence(move))
-        # else:
-        #     sys.stdout.write(my_team_color + " surrenders\n")
+
+        if game.current_player.get_color() == my_team.get_color():
+            move = choose_move()
+            game = make_move(move)
+            sys.stdout.write(generate_move_sentence(move))
+        else:
+            sys.stdout.write(my_team_color + " surrenders\n")
+            file = open('debug.txt', 'rw')
+            file.write("because game.current_player.get_color() != my_team.get_color()")
+
+        """
         print game
         message1 = raw_input()
         message1 = message1.split()
         assert game.current_player.get_color() == message1[0]
         move = text_to_move(game.current_player.legal_moves, message1[2], message1[4], message1[5], message1[7])
         game = make_move(move)
+        """
 
     elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
         end = True
