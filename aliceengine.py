@@ -799,14 +799,22 @@ class Player:
 
     def has_escape_moves(self):
         for move in self.legal_moves:
-            transist = self.make_move(move)
-            if transist.move_status == MoveStatus.DONE:
+            transit = self.make_move(move)
+            if transit.move_status == MoveStatus.DONE:
                 return True
         return False
 
     def is_in_check(self):
         return not len(self.calculate_attacks_on_tile(self.player_king.position,
                                                       self.opponents_moves)) == 0
+
+    def get_escape_moves(self):
+        escape_moves = []
+        for move in self.legal_moves:
+            transit = self.make_move(move)
+            if transit.move_status == MoveStatus.DONE:
+                escape_moves.append(move)
+        return escape_moves
 
     def is_in_check_mate(self):
         return self.is_in_check() and not self.has_escape_moves()

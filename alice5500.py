@@ -25,8 +25,13 @@ def generate_move_sentence(move):
 
 def choose_move():
     player = game.current_player
-    player_legal_moves = player.legal_moves
-    #TODO: come up with better stratagies for choosing a move
+    # TODO: come up with better stratagies for choosing a move
+    # TODO: escape check in case there is one
+    if game.current_player.is_in_check():
+        player_legal_moves = player.get_escape_moves()
+        debug_file.write("Escaped check using move")
+    else:
+        player_legal_moves = player.legal_moves
     move_index = random.randrange(len(player_legal_moves))
     return player_legal_moves[move_index]
 
@@ -35,7 +40,7 @@ def make_move(move):
     move_transition = game.current_player.make_move(move)
     if not move_transition.move_status == MoveStatus.DONE:
         sys.stdout.write(my_team_color + " surrenders\n")
-        file.write("move_transition.move_status != MoveStatus.DONE")
+        debug_file.write("move_transition.move_status != MoveStatus.DONE")
         sys.exit(0)
     return move_transition.transition_board
 
@@ -52,6 +57,7 @@ end = False
 game = Board.create_standard_board()
 my_team_color = None
 my_team = None
+debug_file = open('debug.txt', 'w')
 while not end:
     input_message = raw_input()
 
@@ -72,15 +78,14 @@ while not end:
         assert game.current_player.get_color() == message[0]
         move = text_to_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
         game = make_move(move)
-
         if game.current_player.get_color() == my_team.get_color():
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
+            debug_file.write("move occured\n")
         else:
             sys.stdout.write(my_team_color + " surrenders\n")
-            file = open('debug.txt', 'rw')
-            file.write("because game.current_player.get_color() != my_team.get_color()")
+            debug_file.write("because game.current_player.get_color() != my_team.get_color()")
 
         """
         print game
@@ -89,6 +94,7 @@ while not end:
         assert game.current_player.get_color() == message1[0]
         move = text_to_move(game.current_player.legal_moves, message1[2], message1[4], message1[5], message1[7])
         game = make_move(move)
+        2+3
         """
 
     elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
@@ -99,6 +105,6 @@ while not end:
         sys.stdout.write(my_team_color + " accepts draw\n")
         end = True
         sys.exit(0)
-    print game
+    # print game
     sys.stdin.flush()
     sys.stdout.flush()
