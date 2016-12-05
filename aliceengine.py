@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class Position:
     def __init__(self, board, index):
         self.board = board
@@ -13,7 +16,7 @@ class Position:
             Answer = Position(self.board, self.index + other)
             return Answer
         else:
-            raise Exception("Value Error: "+str(other)+" cannot be added.")
+            raise Exception("Value Error: " + str(other) + " cannot be added.")
 
     def __radd__(self, other):
         if isinstance(other, int):
@@ -25,7 +28,7 @@ class Position:
     def __repr__(self):
         return self.board + "(" + Position.int_to_alg(self.index) + ")"
 
-    def same_position_in_next_board(self): #flip_board can be a name
+    def same_position_in_next_board(self):  # flip_board can be a name
         return Position(BoardIndex.next_board(self.board), self.index)
 
     @staticmethod
@@ -64,6 +67,13 @@ class PlayerColor:
     def opponent(color, white_player, black_player):
         return black_player if color == PlayerColor.White else white_player
 
+    @staticmethod
+    def is_pawn_promotion_square(position, color):
+        if color == PlayerColor.Black:
+            return BoardProperties.EIGHTH_ROW[position.index]
+        else:
+            return BoardProperties.FIRST_ROW[position.index]
+
 
 class BoardProperties:
     NUM_TILES = 64
@@ -90,13 +100,16 @@ class BoardProperties:
         self.SECOND_COLUMN = self.init_column(1)
         self.SEVENTH_COLUMN = self.init_column(6)
         self.EIGHTH_COLUMN = self.init_column(7)
+        self.FIRST_ROW = self.init_row(0)
         self.SECOND_ROW = self.init_row(1)
         self.SEVENTH_ROW = self.init_row(6)
+        self.EIGHTH_ROW = self.init_row(7)
 
     @staticmethod
     def is_vaild_tile_coordinate(new_coordinate):
         return 0 <= new_coordinate.index < BoardProperties.NUM_TILES and \
                1 <= int(new_coordinate.board) <= BoardProperties.NUM_BOARD
+
 
 BoardProperties = BoardProperties()
 
@@ -353,8 +366,8 @@ class King(Piece):
                         piece_at_destination = tile_in_this_board.get_piece()
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
-                            list_of_moves.append(AttackMove(game_config, self, destination_position, piece_at_destination))
-                        break
+                            list_of_moves.append(
+                                AttackMove(game_config, self, destination_position, piece_at_destination))
         return list_of_moves
 
     @staticmethod
@@ -473,7 +486,7 @@ class Bishop(Piece):
                             if piece_color != self.color:
                                 list_of_moves.append(
                                     AttackMove(game_config, self, destination_position,
-                                              piece_at_destination))
+                                               piece_at_destination))
                             break
         return list_of_moves
 
@@ -603,7 +616,7 @@ class Rook(Piece):
                             if piece_color != self.color:
                                 list_of_moves.append(
                                     AttackMove(game_config, self, destination_position,
-                                              piece_at_destination))
+                                               piece_at_destination))
                             break
         return list_of_moves
 
@@ -653,43 +666,51 @@ class Pawn(Piece):
             if not game_config.get_tile(destination_position).is_occupied():
                 tile_in_this_board = Position.same_position_in_next_board(destination_position)
                 if offset == 8 and not game_config.get_tile(tile_in_this_board).is_occupied():
-                    # TODO: Possibility of promotion. Needs better code to deal with Promotion
-                    list_of_moves.append(MajorMove(game_config, self, destination_position))
+                    if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
+                        list_of_moves.append(PawnPromotion(MajorMove(game_config, self, destination_position)))
+                    else:
+                        list_of_moves.append(MajorMove(game_config, self, destination_position))
                 elif offset == 16 and self.is_first_move:
                     if (self.color == PlayerColor.Black and
                             BoardProperties.SECOND_ROW[self.position.index]) \
-                        or (self.color == PlayerColor.White and
-                            BoardProperties.SEVENTH_ROW[self.position.index]):
+                            or (self.color == PlayerColor.White and
+                                    BoardProperties.SEVENTH_ROW[self.position.index]):
                         first_tile_position = Position(BoardIndex.next_board(self.position.board),
                                                        self.position.index + (self.get_direction() * 8))
                         if not (game_config.get_tile(first_tile_position).is_occupied() or
-                                game_config.get_tile(tile_in_this_board).is_occupied()):
+                                    game_config.get_tile(tile_in_this_board).is_occupied()):
                             list_of_moves.append(
                                 MajorMove(game_config, self, destination_position))
                 elif offset == 7 and not \
                         ((BoardProperties.EIGHTH_COLUMN[self.position.index] and self.color == PlayerColor.White) or
-                        (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.Black)):
+                             (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.Black)):
                     tile = game_config.get_tile(tile_in_this_board)
                     if tile.is_occupied():
                         piece_at_destination = tile.get_piece()
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
-                            list_of_moves.append(
-                                AttackMove(game_config, self, destination_position,
-                                           piece_at_destination))
+                            if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
+                                list_of_moves.append(PawnPromotion(AttackMove(game_config, self, destination_position, piece_at_destination)))
+                            else:
+                                list_of_moves.append(AttackMove(game_config, self, destination_position, piece_at_destination))
 
                 elif offset == 9 and not \
                         ((BoardProperties.EIGHTH_COLUMN[self.position.index] and self.color == PlayerColor.Black) or
-                        (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.White)):
+                             (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.White)):
                     tile = game_config.get_tile(tile_in_this_board)
                     if tile.is_occupied():
                         piece_at_destination = tile.get_piece()
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
-                            list_of_moves.append(
-                                AttackMove(game_config, self, destination_position,
-                                           piece_at_destination))
+                            if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
+                                list_of_moves.append(PawnPromotion(AttackMove(game_config, self, destination_position, piece_at_destination)))
+                            else:
+                                list_of_moves.append(
+                                    AttackMove(game_config, self, destination_position, piece_at_destination))
         return list_of_moves
+
+    def promotion_piece(self):
+        return Queen(self.position, self.color)
 
 
 class Move:
@@ -717,12 +738,6 @@ class Move:
 
     def current_coordinate(self):
         return self.piece.position
-
-    def is_attack(self):
-        pass
-
-    def attacked_piece(self):
-        pass
 
 
 class MajorMove(Move):
@@ -761,6 +776,40 @@ class AttackMove(Move):
 
     def __eq__(self, other):
         return super.__eq__(other) and self.attacked_piece == other.attacked_piece
+
+
+class PawnPromotion(Move):
+    def __init__(self, move):
+        Move.__init__(self, move.board, move.piece, move.destination)
+        self.move = move
+        self.promotedPawn = move.piece
+
+    def is_attack(self):
+        return self.move.is_attack()
+
+    def attacked_piece(self):
+        return self.move.attacked_piece()
+
+    def __repr__(self):
+        return "Q(" + str(self.move) + ")"
+
+    def __eq__(self, other):
+        if isinstance(other, PawnPromotion):
+            return self.move == other.move
+        return False
+
+    def execute_move(self):
+        board = self.move.execute_move()
+        boardbuilder = BoardBuilder()
+        for piece in board.current_player.get_active_pieces():
+            if not self.promotedPawn == piece:
+                boardbuilder.set_piece(piece)
+        for piece in board.current_player.get_opponent().get_active_pieces():
+            boardbuilder.set_piece(piece)
+
+        boardbuilder.set_piece(self.promotedPawn.promotion_piece().move_piece(self))
+        boardbuilder.next_move_maker = board.current_player.get_opponent().get_color()
+        return boardbuilder.build()
 
 
 class MoveStatus():
@@ -820,17 +869,31 @@ class Player:
         return self.is_in_check() and not self.has_escape_moves()
 
     def is_in_stale_mate(self):
-        return False
+        return (not self.is_in_check()) and (not self.has_escape_moves())
 
     def make_move(self, move):
         if not self.is_legal_move(move):
             return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
         transition_board = move.execute_move()
-        king_attacks = Player.calculate_attacks_on_tile(transition_board.current_player.get_opponent().player_king.position,
-                                                        transition_board.current_player.legal_moves)
+        king_attacks = Player.calculate_attacks_on_tile(
+            transition_board.current_player.get_opponent().player_king.position,
+            transition_board.current_player.legal_moves)
         if len(king_attacks) != 0:
             return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
         return MoveTransition(transition_board, move, MoveStatus.DONE)
+
+    def make_move_without_changing_board(self, move):
+        if not self.is_legal_move(move):
+            return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
+        new_move = deepcopy(move)
+        new_move.destination = new_move.destination.same_position_in_next_board()
+        transition_board = new_move.execute_move()
+        king_attacks = Player.calculate_attacks_on_tile(
+            transition_board.current_player.get_opponent().player_king.position,
+            transition_board.current_player.legal_moves)
+        if len(king_attacks) != 0:
+            return MoveTransition(self.board, new_move, MoveStatus.LEAVES_KING_IN_CHECK)
+        return MoveTransition(transition_board, new_move, MoveStatus.DONE)
 
 
 class WhitePlayer(Player):
