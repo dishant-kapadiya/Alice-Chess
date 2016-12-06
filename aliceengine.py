@@ -2,23 +2,47 @@ from copy import deepcopy
 
 
 class Position:
+    __doc__ = "A composite class for a position on board. Consists of a board and index."
+
     def __init__(self, board, index):
+        """
+        Initializer of this class
+        :param board: an instance of BoardIndex class and keeps track of which board the
+                      position is on.
+        :param index: a non-negetive integer ranging from 0 to BoardProperties.NUM_TILES.
+                      This represents an index of tile on board.
+        """
         self.board = board
         self.index = index
 
     def __eq__(self, other):
+        """
+        overloaded operator of "==".
+        :param other: an entity with which we compare instance of this class
+        :return: boolean value. True if instance have same values else False
+        """
         if not isinstance(other, Position):
             return False
         return self.board == other.board and self.index == other.index
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         if isinstance(other, int):
-            Answer = Position(self.board, self.index + other)
-            return Answer
+            answer = Position(self.board, self.index + other)
+            return answer
         else:
-            raise Exception("Value Error: " + str(other) + " cannot be added.")
+            return self
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         if isinstance(other, int):
             Answer = Position(self.board, self.index + other)
             return Answer
@@ -26,13 +50,27 @@ class Position:
             raise Exception("Value Error: " + str(other) + " cannot be added.")
 
     def __repr__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this position
+        """
         return self.board + "(" + Position.int_to_alg(self.index) + ")"
 
-    def same_position_in_next_board(self):  # flip_board can be a name
+    def flip_board(self):
+        """
+        flips board index for a given position
+        :return: position with flipped instance
+        """
         return Position(BoardIndex.next_board(self.board), self.index)
 
     @staticmethod
     def int_to_alg(num):
+        """
+        converts integer index to an algebraic representation of a chess tile
+        For Example: 0 := a8, 62 := g0 etc.
+        :param num: valid index i.e. 0 <= num <= BoardProperties.NUM_TILES
+        :return: string consisting the algebraic representation
+        """
         chess_file = ["a", "b", "c", "d", "e", "f", "g", "h"]
         row = 8 - int(num / 8)
         column = chess_file[num % 8]
@@ -40,11 +78,17 @@ class Position:
 
     @staticmethod
     def alg_to_int(notation):
+        """
+        converts algebraic representation to index of the board tile
+        :param notation: string of algebraic notation
+        :return: integer index of the notation
+        """
         chess_file = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
         return chess_file[notation[0]] + (8 - int(notation[1])) * 8
 
 
 class BoardIndex:
+    __doc__ = "A wrapper class for board indexes and functions to manipulate them"
     Board_One = "1"
     Board_Two = "2"
 
@@ -53,10 +97,16 @@ class BoardIndex:
 
     @staticmethod
     def next_board(value):
+        """
+        Returns the next board in order.
+        :param value: current board index
+        :return: index of the next board in form of BoardIndex instance
+        """
         return BoardIndex.Board_One if value == "2" else BoardIndex.Board_Two
 
 
 class PlayerColor:
+    __doc__ = "A wrapper class for Player colors and functions to manipulate them"
     White = "white"
     Black = "black"
 
@@ -65,10 +115,23 @@ class PlayerColor:
 
     @staticmethod
     def opponent(color, white_player, black_player):
+        """
+        returns opponent of the current player
+        :param color: color of the current player
+        :param white_player: Instance of WhitePlayer class
+        :param black_player: Instance of BlackPlayer class
+        :return: returns the opponent of player with current color
+        """
         return black_player if color == PlayerColor.White else white_player
 
     @staticmethod
     def is_pawn_promotion_square(position, color):
+        """
+        checks if given position is suitable promotion square for given player color
+        :param position: instance of Position class
+        :param color: player color of the player
+        :return: True if it is promotion square else False
+        """
         if color == PlayerColor.Black:
             return BoardProperties.EIGHTH_ROW[position.index]
         else:
@@ -76,19 +139,33 @@ class PlayerColor:
 
 
 class BoardProperties:
+    __doc__ = "A wrapper class for Board Properties and functions to manipulate them"
     NUM_TILES = 64
     NUM_TILES_PER_ROW = 8
     NUM_BOARD = 2
 
     @staticmethod
     def init_column(column):
+        """
+        Creates a list of size BoardProperties.NUM_TILES with boolean values. True if
+        the index is in given column
+        :param column: non negative integer
+        :return: list of boolean values
+        """
         grid = [False] * BoardProperties.NUM_TILES
-        for i in range(0 + column, BoardProperties.NUM_TILES, BoardProperties.NUM_TILES_PER_ROW):
+        for i in range(0 + column, BoardProperties.NUM_TILES,
+                       BoardProperties.NUM_TILES_PER_ROW):
             grid[i] = True
         return grid
 
     @staticmethod
     def init_row(row):
+        """
+        Creates a list of size BoardProperties.NUM_TILES with boolean values. True if
+        the index is in given row
+        :param row: non negative integer
+        :return: list of boolean values
+        """
         grid = [False] * BoardProperties.NUM_TILES
         for i in range(BoardProperties.NUM_TILES_PER_ROW * row,
                        BoardProperties.NUM_TILES_PER_ROW * (row + 1)):
@@ -96,6 +173,10 @@ class BoardProperties:
         return grid
 
     def __init__(self):
+        """
+        Initializer of this class. Creates several properties which come handy in later
+        classes.
+        """
         self.FIRST_COLUMN = self.init_column(0)
         self.SECOND_COLUMN = self.init_column(1)
         self.SEVENTH_COLUMN = self.init_column(6)
@@ -106,16 +187,24 @@ class BoardProperties:
         self.EIGHTH_ROW = self.init_row(7)
 
     @staticmethod
-    def is_vaild_tile_coordinate(new_coordinate):
+    def is_valid_tile_coordinate(new_coordinate):
+        """
+        checks if a given Position is a valid coordinate according BoardProperties
+        :param new_coordinate: Position class instance
+        :return: True if valid else False
+        """
         return 0 <= new_coordinate.index < BoardProperties.NUM_TILES and \
                1 <= int(new_coordinate.board) <= BoardProperties.NUM_BOARD
-
-
 BoardProperties = BoardProperties()
 
 
 class Tile:
+    __doc__ = "Abstract class for a tile on board configuration"
+
     def __init__(self, coordinate):
+        """Initalize the coordinate of tile.
+        :param coordinate: a non negative integer
+        """
         self.coordinate = coordinate
 
     def is_occupied(self):
@@ -126,20 +215,38 @@ class Tile:
 
     @staticmethod
     def all_possible_tiles():
+        """
+        generates all possible tiles on a board
+        :return: list of EmptyTiles
+        """
         temp = []
-        for i in range(64):
+        for i in range(BoardProperties.NUM_TILES):
             temp.append(EmptyTile(i))
         return dict(enumerate(temp))
 
 
 class EmptyTile(Tile):
+    __doc__ = "Class representing an Empty Tile. Inherits from Tile"
+
     def __init__(self, coordinate):
+        """
+        Initalize the coordinate of tile. Calls superclass's initializer
+        :param coordinate: a non negative integer
+        """
         Tile.__init__(self, coordinate)
 
     def is_occupied(self):
+        """
+        returns False as an EmptyTile cannot be occupied
+        :return: False
+        """
         return False
 
     def __str__(self):
+        """
+        generates string representation of this tile. Used in printing and debugging
+        :return: String of a suitable representation
+        """
         return "-"
 
     def get_piece(self):
@@ -148,21 +255,50 @@ class EmptyTile(Tile):
 
 class OccupiedTile(Tile):
     def __init__(self, coordinate, piece):
+        """
+        Initalize the coordinate of tile. Calls superclass's initializer and sets own
+        properties
+        :param coordinate: a non negative integer
+        :param piece: Instance of Piece which occupies this Tile
+        """
         Tile.__init__(self, coordinate)
         self.piece = piece
 
     def is_occupied(self):
+        """
+        returns True as an OccupiedTile should be occupied
+        :return: True
+        """
         return True
 
     def __str__(self):
+        """
+        generates string representation of this tile. Used in printing and debugging
+        :return: String of a suitable representation
+        """
         return str(self.piece)
 
     def get_piece(self):
+        """
+        returns the piece occupying this tile
+        :return: Piece
+        """
         return self.piece
 
 
 class Board:
+    __doc__ = "Represents a full game on the table. Consists of all the information " \
+              "necessary to represent a game of Alice Chess."
+
     def __init__(self, builder):
+        """
+        Initializes the class properties like game boards, pieces in arsenal of each
+        player, players, current players etc.
+        NOTE: Shouldn't be initialised by anyone else then builder class for this
+        class. This class follows Builder Pattern for construction and can be build
+        using the BoardBuilder class.
+        :param builder: Instance of the BoardBuilder class
+        """
         self.game_board1 = Board.create_game_board(builder.board_config1)
         self.game_board2 = Board.create_game_board(builder.board_config2)
         self.white_piece = Board.calculate_active_piece(self.game_board1, PlayerColor.White) + \
@@ -180,16 +316,26 @@ class Board:
                                                    self.black_player)
 
     @staticmethod
-    def create_game_board(builder):
+    def create_game_board(board_config):
+        """
+        creates a list of all the tiles on given game board
+        :param board_config: dictionary of configuration on this board
+        :return: list of suitable tiles on this board
+        """
         board_tiles = [None] * BoardProperties.NUM_TILES
         for i in range(BoardProperties.NUM_TILES):
-            if isinstance(builder[i], Piece):
-                board_tiles[i] = OccupiedTile(i, builder[i])
+            if isinstance(board_config[i], Piece):
+                board_tiles[i] = OccupiedTile(i, board_config[i])
             else:
                 board_tiles[i] = EmptyTile(i)
         return board_tiles
 
     def get_tile(self, coordinate):
+        """
+        gets the tile at a given non negative integer index
+        :param coordinate: non negative integer
+        :return: instance of Tile class
+        """
         if coordinate.board == BoardIndex.Board_One:
             game_board = self.game_board1
         else:
@@ -198,6 +344,11 @@ class Board:
 
     @staticmethod
     def create_standard_board():
+        """
+        Creates a standard board configuration in Alice Chess
+        :return: instance of Board class with the properties set to standard starting
+                 point in the game
+        """
         builder = BoardBuilder()
         # Black Arsenal
         builder.set_piece(Rook(Position(BoardIndex.Board_One, 0), PlayerColor.Black))
@@ -238,6 +389,12 @@ class Board:
 
     @staticmethod
     def calculate_active_piece(gameboard, color):
+        """
+        generates a list of all the active pieces of a given player
+        :param gameboard: list of all the tiles on a game board
+        :param color: color of the player
+        :return: list of all the active(non-dead) pieces
+        """
         pieces = []
         for tile in gameboard:
             if tile.is_occupied():
@@ -248,12 +405,21 @@ class Board:
         return pieces
 
     def calculate_moves(self, arsenal):
+        """
+        generates a list of all the moves possible for a player current this condition
+        :param arsenal: list of pieces a player has
+        :return: list of Moves that player can make
+        """
         list_of_moves = []
         for piece in arsenal:
             list_of_moves += piece.valid_moves(self)
         return list_of_moves
 
     def __repr__(self):
+        """
+        generates string representation of this game. suitable for printing and debugging
+        :return: string representation of this game
+        """
         str_rep = "8: "
         for tile in self.game_board1:
             str_rep += "{:3}".format(str(tile))
@@ -275,10 +441,15 @@ class Board:
         return final_str + last_line
 
     def get_all_legal_moves(self):
+        """
+        generates all the legal moves possible by both the players in this configuration
+        :return: list of Moves
+        """
         return self.white_legal_moves + self.black_legal_moves
 
 
 class BoardBuilder:
+    __doc__ = "Builder class for the Board. Used to construct the Board representation."
     board_config1 = {}
     board_config2 = {}
     next_move_maker = None
@@ -351,12 +522,12 @@ class King(Piece):
         for offset in King.valid_move_offsets:
             destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + offset)
-            if BoardProperties.is_vaild_tile_coordinate(destination_position):
+            if BoardProperties.is_valid_tile_coordinate(destination_position):
                 if King.in_first_column_exception(offset, self.position.index) or \
                         King.in_eighth_column_exception(offset, self.position.index):
                     continue
                 tile_in_next_board = game_config.get_tile(destination_position)
-                position_in_same_board = Position.same_position_in_next_board(destination_position)
+                position_in_same_board = Position.flip_board(destination_position)
                 tile_in_this_board = game_config.get_tile(position_in_same_board)
                 if not tile_in_next_board.is_occupied():
                     if not tile_in_this_board.is_occupied():
@@ -406,16 +577,16 @@ class Queen(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in Queen.valid_move_offsets:
-            destination_position = Position.same_position_in_next_board(self.position)
-            while BoardProperties.is_vaild_tile_coordinate(destination_position):
+            destination_position = Position.flip_board(self.position)
+            while BoardProperties.is_valid_tile_coordinate(destination_position):
                 if Queen.in_first_column_exception(offset, destination_position.index) or \
                         Queen.in_eighth_column_exception(offset, destination_position.index):
                     break
                 destination_position += offset
-                if BoardProperties.is_vaild_tile_coordinate(destination_position):
+                if BoardProperties.is_valid_tile_coordinate(destination_position):
                     # tile = game_config.get_tile(destination_position)
                     tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.same_position_in_next_board(destination_position)
+                    position_in_same_board = Position.flip_board(destination_position)
                     tile_in_this_board = game_config.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
                         if not tile_in_this_board.is_occupied():
@@ -464,16 +635,16 @@ class Bishop(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in Bishop.valid_move_offsets:
-            destination_position = Position.same_position_in_next_board(self.position)
-            while BoardProperties.is_vaild_tile_coordinate(destination_position):
+            destination_position = Position.flip_board(self.position)
+            while BoardProperties.is_valid_tile_coordinate(destination_position):
                 if Bishop.in_first_column_exception(offset, destination_position.index) or \
                         Bishop.in_eighth_column_exception(offset, destination_position.index):
                     break
                 destination_position += offset
-                if BoardProperties.is_vaild_tile_coordinate(destination_position):
+                if BoardProperties.is_valid_tile_coordinate(destination_position):
                     # tile = game_config.get_tile(destination_position)
                     tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.same_position_in_next_board(
+                    position_in_same_board = Position.flip_board(
                         destination_position)
                     tile_in_this_board = game_config.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
@@ -526,14 +697,14 @@ class Knight(Piece):
         for offset in Knight.valid_move_offsets:
             destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + offset)
-            if BoardProperties.is_vaild_tile_coordinate(destination_position):
+            if BoardProperties.is_valid_tile_coordinate(destination_position):
                 if Knight.in_first_column_exception(offset, self.position.index) or \
                         Knight.in_second_column_exception(offset, self.position.index) or \
                         Knight.in_seventh_column_exception(offset, self.position.index) or \
                         Knight.in_eighth_column_exception(offset, self.position.index):
                     continue
                 tile_in_next_board = game_config.get_tile(destination_position)
-                position_in_same_board = Position.same_position_in_next_board(destination_position)
+                position_in_same_board = Position.flip_board(destination_position)
                 tile_in_this_board = game_config.get_tile(position_in_same_board)
                 if not tile_in_next_board.is_occupied():
                     if not tile_in_this_board.is_occupied():
@@ -596,16 +767,16 @@ class Rook(Piece):
     def valid_moves(self, game_config):
         list_of_moves = []
         for offset in Rook.valid_move_offsets:
-            destination_position = Position.same_position_in_next_board(self.position)
-            while BoardProperties.is_vaild_tile_coordinate(destination_position):
+            destination_position = Position.flip_board(self.position)
+            while BoardProperties.is_valid_tile_coordinate(destination_position):
                 if Rook.in_first_column_exception(offset, destination_position.index) or \
                         Rook.in_eighth_column_exception(offset, destination_position.index):
                     break
                 destination_position += offset
-                if BoardProperties.is_vaild_tile_coordinate(destination_position):
+                if BoardProperties.is_valid_tile_coordinate(destination_position):
                     # tile = game_config.get_tile(destination_position)
                     tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.same_position_in_next_board(destination_position)
+                    position_in_same_board = Position.flip_board(destination_position)
                     tile_in_this_board = game_config.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
                         if not tile_in_this_board.is_occupied():
@@ -661,10 +832,10 @@ class Pawn(Piece):
         for offset in Pawn.valid_move_offsets:
             destination_position = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + (offset * self.get_direction()))
-            if not BoardProperties.is_vaild_tile_coordinate(destination_position):
+            if not BoardProperties.is_valid_tile_coordinate(destination_position):
                 continue
             if not game_config.get_tile(destination_position).is_occupied():
-                tile_in_this_board = Position.same_position_in_next_board(destination_position)
+                tile_in_this_board = Position.flip_board(destination_position)
                 if offset == 8 and not game_config.get_tile(tile_in_this_board).is_occupied():
                     if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
                         list_of_moves.append(PawnPromotion(MajorMove(game_config, self, destination_position)))
@@ -845,7 +1016,7 @@ class Player:
     def calculate_attacks_on_tile(tile, opponents_moves):
         attacking_moves = []
         for move in opponents_moves:
-            if tile == Position.same_position_in_next_board(move.destination):
+            if tile == Position.flip_board(move.destination):
                 attacking_moves.append(move)
         return attacking_moves
 
@@ -882,13 +1053,13 @@ class Player:
                 double_pawns[index] = double_pawns.get(index, 0) + 1
 
                 def position_generator(num):
-                    return Position.same_position_in_next_board(piece.position + piece.get_direction() * num)
+                    return Position.flip_board(piece.position + piece.get_direction() * num)
                 positions = [position_generator(i) for i in offsets]
                 piece_at_positions = [self.board.get_tile(position).get_piece() for position in positions]
                 if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[0].color == piece.color or
                         isinstance(piece_at_positions[2], Pawn) and piece_at_positions[2].color == piece.color):
                     isolated_pawn_count += 1
-                # if self.board.get_tile(Position.same_position_in_next_board(positions[1])).get_piece().color != piece.color or \
+                # if self.board.get_tile(Position.flip_board(positions[1])).get_piece().color != piece.color or \
                 #                 piece.color != piece_at_positions[1].color:
                 #     blocked_pawn_count += 1
         for val in double_pawns.values():
@@ -918,7 +1089,7 @@ class Player:
         if not self.is_legal_move(move):
             return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
         new_move = deepcopy(move)
-        new_move.destination = new_move.destination.same_position_in_next_board()
+        new_move.destination = new_move.destination.flip_board()
         transition_board = new_move.execute_move()
         king_attacks = Player.calculate_attacks_on_tile(
             transition_board.current_player.get_opponent().player_king.position,
