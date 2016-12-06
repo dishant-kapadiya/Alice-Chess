@@ -7,6 +7,8 @@ from aliceengine import *
 """Generating sequence of meanigful messages"""
 
 max_depth = 2
+
+
 def does_this_move_creates_check(state, move):
     partial_move_transition = state.current_player.make_move_without_changing_board(move)
     if partial_move_transition.move_status == MoveStatus.LEAVES_KING_IN_CHECK:
@@ -23,15 +25,71 @@ def analyse_state(state):
     player.legal_moves = player_legal_moves
 
 
-def evaluate_state(my_pieces, other_pieces):
-    return sum(my_pieces) - sum(other_pieces)
-
-
 def get_current_and_opponent_pieces(state):
     if my_team_color == PlayerColor.White:
         return [state.white_piece, state.black_piece]
     else:
         return [state.black_piece, state.white_piece]
+
+
+def evaluate_state(my_pieces, other_pieces):
+    return sum(my_pieces) - sum(other_pieces)
+
+
+"""#####################################################################################################################
+############################################### Alpha-Beta Pruning ##################################################"""
+
+
+def alpha_beta_pruning(state):
+    legal_moves = state.current_player.legal_moves
+    best_move = legal_moves[0]
+    best_score = float("-inf")
+    for move in legal_moves:
+        next_state = state.current_player.make_move(move)
+        if next_state.move_status == MoveStatus.DONE:
+            analyse_state(next_state.transition_board)
+            score = alpha_beta_minimizer(next_state.transition_board, float("-inf"), float("inf"))
+            if score > best_score:
+                best_score = score
+                best_move = move
+    return best_move
+
+
+def alpha_beta_minimizer(state, alpha, beta, depth=1):
+    my_piece, other_piece = get_current_and_opponent_pieces(state)
+    if depth == max_depth:
+        return (5 / depth) * evaluate_state(my_piece, other_piece)
+    legal_moves = state.current_player.legal_moves
+    for move in legal_moves:
+        next_state = state.current_player.make_move(move)
+        if next_state.move_status == MoveStatus.DONE:
+            analyse_state(next_state.transition_board)
+            score = maximizer(next_state.transition_board, depth + 1)
+            if score <= alpha:
+                return alpha
+            else:
+                beta = score
+    return beta
+
+
+def alpha_beta_maximizer(state, alpha, beta, depth=1):
+    my_piece, other_piece = get_current_and_opponent_pieces(state)
+    if depth == max_depth:
+        return (5 / depth) * evaluate_state(my_piece, other_piece)
+    legal_moves = state.current_player.legal_moves
+    for move in legal_moves:
+        next_state = state.current_player.make_move(move)
+        if next_state.move_status == MoveStatus.DONE:
+            analyse_state(next_state.transition_board)
+            score = minimizer(next_state.transition_board, depth + 1)
+            if score >= beta:
+                return beta
+            else:
+                alpha = score
+    return alpha
+
+"""#####################################################################################################################
+#################################################### MIN MAX ########################################################"""
 
 
 def min_max(state):
@@ -52,7 +110,7 @@ def min_max(state):
 def minimizer(state, depth=1):
     my_piece, other_piece = get_current_and_opponent_pieces(state)
     if depth == max_depth:
-        return (5/depth) * evaluate_state(my_piece, other_piece)
+        return (5 / depth) * evaluate_state(my_piece, other_piece)
     legal_moves = state.current_player.legal_moves
     best_score = float("inf")
     for move in legal_moves:
@@ -62,14 +120,13 @@ def minimizer(state, depth=1):
             score = maximizer(next_state.transition_board, depth + 1)
             if score < best_score:
                 best_score = score
-                best_move = move
     return best_score
 
 
 def maximizer(state, depth=1):
     my_piece, other_piece = get_current_and_opponent_pieces(state)
     if depth == max_depth:
-        return (5/depth) * evaluate_state(my_piece, other_piece)
+        return (5 / depth) * evaluate_state(my_piece, other_piece)
     legal_moves = state.current_player.legal_moves
     best_score = float("-inf")
     for move in legal_moves:
@@ -79,8 +136,11 @@ def maximizer(state, depth=1):
             score = minimizer(next_state.transition_board, depth + 1)
             if score > best_score:
                 best_score = score
-                best_move = move
     return best_score
+
+
+"""#####################################################################################################################
+#####################################################################################################################"""
 
 
 def generate_move_sentence(move):
@@ -101,7 +161,8 @@ def choose_move():
     if len(player_legal_moves) == 0:
         sys.stdout.write(my_team_color + " surrenders\n")
         sys.exit(0)
-    move = min_max(game)
+    # move = min_max(game)
+    move = alpha_beta_pruning(game)
     # move_index = random.randrange(len(player_legal_moves))
     return move
 
