@@ -690,9 +690,11 @@ class Pawn(Piece):
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
                             if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
-                                list_of_moves.append(PawnPromotion(AttackMove(game_config, self, destination_position, piece_at_destination)))
+                                list_of_moves.append(PawnPromotion(
+                                    AttackMove(game_config, self, destination_position, piece_at_destination)))
                             else:
-                                list_of_moves.append(AttackMove(game_config, self, destination_position, piece_at_destination))
+                                list_of_moves.append(
+                                    AttackMove(game_config, self, destination_position, piece_at_destination))
 
                 elif offset == 9 and not \
                         ((BoardProperties.EIGHTH_COLUMN[self.position.index] and self.color == PlayerColor.Black) or
@@ -703,7 +705,8 @@ class Pawn(Piece):
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
                             if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
-                                list_of_moves.append(PawnPromotion(AttackMove(game_config, self, destination_position, piece_at_destination)))
+                                list_of_moves.append(PawnPromotion(
+                                    AttackMove(game_config, self, destination_position, piece_at_destination)))
                             else:
                                 list_of_moves.append(
                                     AttackMove(game_config, self, destination_position, piece_at_destination))
@@ -864,6 +867,35 @@ class Player:
             if transit.move_status == MoveStatus.DONE:
                 escape_moves.append(move)
         return escape_moves
+
+    def pawn_score(self):
+        pieces = self.get_active_pieces()
+        offsets = [7, 8, 9]
+        double_pawns = {}
+        double_pawn_count = 0
+        isolated_pawn_count = 0
+        # blocked_pawn_count = 0
+        # calculating double pawns and isolated pawns
+        for piece in pieces:
+            if isinstance(piece, Pawn):
+                index = str(piece.position.board) + Position.int_to_alg(piece.position.index)[0]
+                double_pawns[index] = double_pawns.get(index, 0) + 1
+
+                def position_generator(num):
+                    return Position.same_position_in_next_board(piece.position + piece.get_direction() * num)
+                positions = [position_generator(i) for i in offsets]
+                piece_at_positions = [self.board.get_tile(position).get_piece() for position in positions]
+                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[0].color == piece.color or
+                        isinstance(piece_at_positions[2], Pawn) and piece_at_positions[2].color == piece.color):
+                    isolated_pawn_count += 1
+                # if self.board.get_tile(Position.same_position_in_next_board(positions[1])).get_piece().color != piece.color or \
+                #                 piece.color != piece_at_positions[1].color:
+                #     blocked_pawn_count += 1
+        for val in double_pawns.values():
+            if val > 1:
+                double_pawn_count += 1
+        # blocked pawn
+        return 0.5 * float(double_pawn_count) + isolated_pawn_count
 
     def is_in_check_mate(self):
         return self.is_in_check() and not self.has_escape_moves()
