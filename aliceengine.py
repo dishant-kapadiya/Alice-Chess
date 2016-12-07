@@ -1,4 +1,4 @@
-from copy import deepcopy
+"""Implements an Alice Chess Engine"""
 
 
 class Position:
@@ -44,8 +44,8 @@ class Position:
         :return: updated instance of this class
         """
         if isinstance(other, int):
-            Answer = Position(self.board, self.index + other)
-            return Answer
+            answer = Position(self.board, self.index + other)
+            return answer
         else:
             raise Exception("Value Error: " + str(other) + " cannot be added.")
 
@@ -187,7 +187,7 @@ class BoardProperties:
         self.EIGHTH_ROW = self.init_row(7)
 
     @staticmethod
-    def is_valid_tile_coordinate(new_coordinate):
+    def valid_tile(new_coordinate):
         """
         checks if a given Position is a valid coordinate according BoardProperties
         :param new_coordinate: Position class instance
@@ -195,6 +195,8 @@ class BoardProperties:
         """
         return 0 <= new_coordinate.index < BoardProperties.NUM_TILES and \
                1 <= int(new_coordinate.board) <= BoardProperties.NUM_BOARD
+
+
 BoardProperties = BoardProperties()
 
 
@@ -250,6 +252,10 @@ class EmptyTile(Tile):
         return "-"
 
     def get_piece(self):
+        """
+        returns None as EmptyTile is not Occupied
+        :return:
+        """
         return None
 
 
@@ -301,10 +307,14 @@ class Board:
         """
         self.game_board1 = Board.create_game_board(builder.board_config1)
         self.game_board2 = Board.create_game_board(builder.board_config2)
-        self.white_piece = Board.calculate_active_piece(self.game_board1, PlayerColor.White) + \
-                           Board.calculate_active_piece(self.game_board2, PlayerColor.White)
-        self.black_piece = Board.calculate_active_piece(self.game_board1, PlayerColor.Black) + \
-                           Board.calculate_active_piece(self.game_board2, PlayerColor.Black)
+        self.white_piece = Board.calculate_active_piece(self.game_board1,
+                                                        PlayerColor.White) + \
+                           Board.calculate_active_piece(self.game_board2,
+                                                        PlayerColor.White)
+        self.black_piece = Board.calculate_active_piece(self.game_board1,
+                                                        PlayerColor.Black) + \
+                           Board.calculate_active_piece(self.game_board2,
+                                                        PlayerColor.Black)
         self.white_legal_moves = self.calculate_moves(self.white_piece)
         self.black_legal_moves = self.calculate_moves(self.black_piece)
         self.white_player = WhitePlayer(self, self.white_legal_moves,
@@ -455,29 +465,50 @@ class BoardBuilder:
     next_move_maker = None
 
     def __init__(self):
+        """
+        Initializes all the values to None and gets the basic structure ready
+        """
         for i in range(BoardProperties.NUM_TILES):
             self.board_config1[i] = None
             self.board_config2[i] = None
         self.next_move_maker = None
 
     def set_piece(self, piece):
+        """
+        adds the piece at its position on board.
+        :param piece: Piece which needs to be added on board
+        """
         if piece.position.board == BoardIndex.Board_One:
             self.board_config1[piece.position.index] = piece
         else:
             self.board_config2[piece.position.index] = piece
 
     def set_next_move_maker(self, next_move_maker):
+        """
+        sets the next move make in this board configuration
+        :param next_move_maker: instance of PlayerColor class
+        """
         self.next_move_maker = next_move_maker
 
     def build(self):
+        """
+        Constucts the object of Board class which represents a suitable representation
+        representated by dictionaries in this class
+        :return: Instance of the Board class
+        """
         return Board(self)
 
 
 class Piece:
-    __doc__ = """Abstract class for different pieces in the game.
-                 Implements methods for generating valid moves in current gamestate."""
+    __doc__ = "Abstract class for different pieces in the game. Implements methods for " \
+              "generating valid moves in current gamestate."
 
     def __init__(self, position, color):
+        """
+        Initialize the properties of a piece.
+        :param position: Position at which the piece is currently standing
+        :param color: PlayerColor instance which represents the color of piece
+        """
         self.position = position
         self.color = color
         self.is_first_move = False
@@ -489,69 +520,115 @@ class Piece:
         pass
 
     def __eq__(self, other):
+        """
+        overloaded operator of "==". used to compare value of other with the instance
+        of this class
+        :param other: an entity with which we compare this classes entity
+        :return: True if the values match else False
+        """
         if not (self.__class__ == other.__class__ and isinstance(other, Piece)):
             return False
 
-        return self.position == other.position and \
-               self.color == other.color and \
+        return self.position == other.position and self.color == other.color and \
                self.is_first_move == other.is_first_move
 
 
 class King(Piece):
-    __doc__ = """Implements a King class by inheriting Piece class."""
+    __doc__ = "Implements a King class by inheriting Piece class."
     valid_move_offsets = [-9, -8, -7, -1, 1, 7, 8, 9]
 
     def __init__(self, position, color):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        """
         Piece.__init__(self, position, color)
         self.value = 13
 
     def __add__(self, other):
+        """
+            overloaded operator for forward addition
+            :param other: an entity with which we add instance of this class
+            :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
         return "K" if self.color == PlayerColor.White else "k"
 
     def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
         return King(move.destination, move.piece.color)
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in King.valid_move_offsets:
-            destination_position = Position(BoardIndex.next_board(self.position.board),
+            destination = Position(BoardIndex.next_board(self.position.board),
                                             self.position.index + offset)
-            if BoardProperties.is_valid_tile_coordinate(destination_position):
-                if King.in_first_column_exception(offset, self.position.index) or \
-                        King.in_eighth_column_exception(offset, self.position.index):
+            if BoardProperties.valid_tile(destination):
+                if King.first_column_exception(offset, self.position.index) or \
+                        King.eighth_column_exception(offset, self.position.index):
                     continue
-                tile_in_next_board = game_config.get_tile(destination_position)
-                position_in_same_board = Position.flip_board(destination_position)
-                tile_in_this_board = game_config.get_tile(position_in_same_board)
+                tile_in_next_board = game_state.get_tile(destination)
+                position_in_same_board = Position.flip_board(destination)
+                tile_in_this_board = game_state.get_tile(position_in_same_board)
                 if not tile_in_next_board.is_occupied():
                     if not tile_in_this_board.is_occupied():
-                        list_of_moves.append(
-                            MajorMove(game_config, self, destination_position))
+                        moves.append(SimpleMove(game_state, self, destination))
                     else:
                         piece_at_destination = tile_in_this_board.get_piece()
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
-                            list_of_moves.append(
-                                AttackMove(game_config, self, destination_position, piece_at_destination))
-        return list_of_moves
+                            moves.append(AttackMove(game_state, self, destination,
+                                                    piece_at_destination))
+        return moves
 
     @staticmethod
-    def in_first_column_exception(offset, destination_position):
-        return BoardProperties.FIRST_COLUMN[destination_position] and ((offset == -9) or
-                                                                       (offset == -1) or
-                                                                       (offset == 7))
+    def first_column_exception(offset, position):
+        """
+        Detects the exception for First column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in first column of the board
+        """
+        return BoardProperties.FIRST_COLUMN[position] and ((offset == -9) or
+                                                           (offset == -1) or
+                                                           (offset == 7))
 
     @staticmethod
-    def in_eighth_column_exception(offset, destination_position):
-        return BoardProperties.EIGHTH_COLUMN[destination_position] and ((offset == -7) or
-                                                                        (offset == 1) or
-                                                                        (offset == 9))
+    def eighth_column_exception(offset, position):
+        """
+        Detects the exception for Eighth column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in eighth column of the board
+        """
+        return BoardProperties.EIGHTH_COLUMN[position] and ((offset == -7) or
+                                                            (offset == 1) or
+                                                            (offset == 9))
 
 
 class Queen(Piece):
@@ -559,60 +636,99 @@ class Queen(Piece):
     valid_move_offsets = [-9, -8, -7, -1, 1, 7, 8, 9]
 
     def __init__(self, position, color):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        """
         Piece.__init__(self, position, color)
         self.value = 12
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
         return "Q" if self.color == PlayerColor.White else "q"
 
     def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
         return Queen(move.destination, move.piece.color)
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in Queen.valid_move_offsets:
-            destination_position = Position.flip_board(self.position)
-            while BoardProperties.is_valid_tile_coordinate(destination_position):
-                if Queen.in_first_column_exception(offset, destination_position.index) or \
-                        Queen.in_eighth_column_exception(offset, destination_position.index):
+            destination = Position.flip_board(self.position)
+            while BoardProperties.valid_tile(destination):
+                if Queen.first_column_exception(offset, destination.index) or \
+                        Queen.eighth_column_exception(offset, destination.index):
                     break
-                destination_position += offset
-                if BoardProperties.is_valid_tile_coordinate(destination_position):
-                    # tile = game_config.get_tile(destination_position)
-                    tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.flip_board(destination_position)
-                    tile_in_this_board = game_config.get_tile(position_in_same_board)
+                destination += offset
+                if BoardProperties.valid_tile(destination):
+                    tile_in_next_board = game_state.get_tile(destination)
+                    position_in_same_board = Position.flip_board(destination)
+                    tile_in_this_board = game_state.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
                         if not tile_in_this_board.is_occupied():
-                            list_of_moves.append(
-                                MajorMove(game_config, self, destination_position))
+                            moves.append(SimpleMove(game_state, self, destination))
                         else:
                             piece_at_destination = tile_in_this_board.get_piece()
                             piece_color = piece_at_destination.color
                             if piece_color != self.color:
-                                list_of_moves.append(
-                                    AttackMove(game_config, self, destination_position,
-                                               piece_at_destination))
+                                moves.append(AttackMove(game_state, self, destination,
+                                                        piece_at_destination))
                             break
-        return list_of_moves
+        return moves
 
     @staticmethod
-    def in_first_column_exception(offset, destination_position):
-        return BoardProperties.FIRST_COLUMN[destination_position] and ((offset == -9) or
-                                                                       (offset == -1) or
-                                                                       (offset == 7))
+    def first_column_exception(offset, position):
+        """
+        Detects the exception for First column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in first column of the board
+        """
+        return BoardProperties.FIRST_COLUMN[position] and ((offset == -9) or
+                                                           (offset == -1) or
+                                                           (offset == 7))
 
     @staticmethod
-    def in_eighth_column_exception(offset, destination_position):
-        return BoardProperties.EIGHTH_COLUMN[destination_position] and ((offset == -7) or
-                                                                        (offset == 1) or
-                                                                        (offset == 9))
+    def eighth_column_exception(offset, position):
+        """
+        Detects the exception for Eighth column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in eighth column of the board
+        """
+        return BoardProperties.EIGHTH_COLUMN[position] and ((offset == -7) or
+                                                            (offset == 1) or
+                                                            (offset == 9))
 
 
 class Bishop(Piece):
@@ -620,59 +736,97 @@ class Bishop(Piece):
     valid_move_offsets = [-9, -7, 7, 9]
 
     def __init__(self, position, color):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        """
         Piece.__init__(self, position, color)
         self.value = 11
 
-    def __str__(self):
-        return "B" if self.color == PlayerColor.White else "b"
-
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
+        return "B" if self.color == PlayerColor.White else "b"
+
+    def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
+        return Bishop(move.destination, move.piece.color)
+
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in Bishop.valid_move_offsets:
-            destination_position = Position.flip_board(self.position)
-            while BoardProperties.is_valid_tile_coordinate(destination_position):
-                if Bishop.in_first_column_exception(offset, destination_position.index) or \
-                        Bishop.in_eighth_column_exception(offset, destination_position.index):
+            destination = Position.flip_board(self.position)
+            while BoardProperties.valid_tile(destination):
+                if Bishop.first_column_exception(offset, destination.index) or \
+                        Bishop.eighth_column_exception(offset, destination.index):
                     break
-                destination_position += offset
-                if BoardProperties.is_valid_tile_coordinate(destination_position):
-                    # tile = game_config.get_tile(destination_position)
-                    tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.flip_board(
-                        destination_position)
-                    tile_in_this_board = game_config.get_tile(position_in_same_board)
+                destination += offset
+                if BoardProperties.valid_tile(destination):
+                    tile_in_next_board = game_state.get_tile(destination)
+                    position_in_same_board = Position.flip_board(destination)
+                    tile_in_this_board = game_state.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
                         if not tile_in_this_board.is_occupied():
-                            list_of_moves.append(
-                                MajorMove(game_config, self, destination_position))
+                            moves.append(SimpleMove(game_state, self, destination))
                         else:
                             piece_at_destination = tile_in_this_board.get_piece()
                             piece_color = piece_at_destination.color
                             if piece_color != self.color:
-                                list_of_moves.append(
-                                    AttackMove(game_config, self, destination_position,
-                                               piece_at_destination))
+                                moves.append(AttackMove(game_state, self, destination,
+                                                        piece_at_destination))
                             break
-        return list_of_moves
-
-    def move_piece(self, move):
-        return Bishop(move.destination, move.piece.color)
+        return moves
 
     @staticmethod
-    def in_first_column_exception(offset, destination_position):
-        return BoardProperties.FIRST_COLUMN[destination_position] and ((offset == -9) or
-                                                                       (offset == 7))
+    def first_column_exception(offset, position):
+        """
+        Detects the exception for First column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in first column of the board
+        """
+        return BoardProperties.FIRST_COLUMN[position] and ((offset == -9) or
+                                                           (offset == 7))
 
     @staticmethod
-    def in_eighth_column_exception(offset, destination_position):
-        return BoardProperties.EIGHTH_COLUMN[destination_position] and ((offset == -7) or
-                                                                        (offset == 9))
+    def eighth_column_exception(offset, position):
+        """
+        Detects the exception for Eighth column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in eighth column of the board
+        """
+        return BoardProperties.EIGHTH_COLUMN[position] and ((offset == -7) or
+                                                            (offset == 9))
 
 
 class Knight(Piece):
@@ -680,71 +834,123 @@ class Knight(Piece):
     valid_move_offsets = [-17, -15, -10, -6, 6, 10, 15, 17]
 
     def __init__(self, position, color):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        """
         Piece.__init__(self, position, color)
         self.value = 10
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
         return "N" if self.color == PlayerColor.White else "n"
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
+        return Knight(move.destination, move.piece.color)
+
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in Knight.valid_move_offsets:
-            destination_position = Position(BoardIndex.next_board(self.position.board),
-                                            self.position.index + offset)
-            if BoardProperties.is_valid_tile_coordinate(destination_position):
-                if Knight.in_first_column_exception(offset, self.position.index) or \
-                        Knight.in_second_column_exception(offset, self.position.index) or \
-                        Knight.in_seventh_column_exception(offset, self.position.index) or \
-                        Knight.in_eighth_column_exception(offset, self.position.index):
+            destination = Position(BoardIndex.next_board(self.position.board),
+                                   self.position.index + offset)
+            if BoardProperties.valid_tile(destination):
+                if Knight.first_column_exception(offset, self.position.index) or \
+                        Knight.second_column_exception(offset, self.position.index) or \
+                        Knight.seventh_column_exception(offset, self.position.index) or \
+                        Knight.eighth_column_exception(offset, self.position.index):
                     continue
-                tile_in_next_board = game_config.get_tile(destination_position)
-                position_in_same_board = Position.flip_board(destination_position)
-                tile_in_this_board = game_config.get_tile(position_in_same_board)
+                tile_in_next_board = game_state.get_tile(destination)
+                position_in_same_board = Position.flip_board(destination)
+                tile_in_this_board = game_state.get_tile(position_in_same_board)
                 if not tile_in_next_board.is_occupied():
                     if not tile_in_this_board.is_occupied():
-                        list_of_moves.append(
-                            MajorMove(game_config, self, destination_position))
+                        moves.append(SimpleMove(game_state, self, destination))
                     else:
                         piece_at_destination = tile_in_this_board.get_piece()
                         piece_color = piece_at_destination.color
                         if piece_color != self.color:
-                            list_of_moves.append(
-                                AttackMove(game_config, self, destination_position,
-                                           piece_at_destination))
-        return list_of_moves
-
-    def move_piece(self, move):
-        return Knight(move.destination, move.piece.color)
+                            moves.append(AttackMove(game_state, self, destination,
+                                                    piece_at_destination))
+        return moves
 
     @staticmethod
-    def in_first_column_exception(offset, destination_position):
-        return BoardProperties.FIRST_COLUMN[destination_position] and ((offset == -17) or
-                                                                       (offset == -10) or
-                                                                       (offset == 6) or
-                                                                       (offset == 15))
+    def first_column_exception(offset, position):
+        """
+        Detects the exception for First column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in first column of the board
+        """
+        return BoardProperties.FIRST_COLUMN[position] and ((offset == -17) or
+                                                           (offset == -10) or
+                                                           (offset == 6) or
+                                                           (offset == 15))
 
     @staticmethod
-    def in_second_column_exception(offset, destination_position):
-        return BoardProperties.SECOND_COLUMN[destination_position] and ((offset == -10) or
-                                                                        (offset == 6))
+    def second_column_exception(offset, position):
+        """
+        Detects the exception for Second column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in second column of the board
+        """
+        return BoardProperties.SECOND_COLUMN[position] and ((offset == -10) or
+                                                            (offset == 6))
 
     @staticmethod
-    def in_seventh_column_exception(offset, destination_position):
-        return BoardProperties.SEVENTH_COLUMN[destination_position] and ((offset == -6) or
-                                                                         (offset == 10))
+    def seventh_column_exception(offset, position):
+        """
+        Detects the exception for Seventh column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in seventh column of the board
+        """
+        return BoardProperties.SEVENTH_COLUMN[position] and ((offset == -6) or
+                                                             (offset == 10))
 
     @staticmethod
-    def in_eighth_column_exception(offset, destination_position):
-        return BoardProperties.EIGHTH_COLUMN[destination_position] and ((offset == -15) or
-                                                                        (offset == -6) or
-                                                                        (offset == 10) or
-                                                                        (offset == 17))
+    def eighth_column_exception(offset, position):
+        """
+        Detects the exception for Eighth column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in eighth column of the board
+        """
+        return BoardProperties.EIGHTH_COLUMN[position] and ((offset == -15) or
+                                                            (offset == -6) or
+                                                            (offset == 10) or
+                                                            (offset == 17))
 
 
 class Rook(Piece):
@@ -752,55 +958,95 @@ class Rook(Piece):
     valid_move_offsets = [-8, -1, 1, 8]
 
     def __init__(self, position, color):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        """
         Piece.__init__(self, position, color)
         self.value = 11
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
         return "R" if self.color == PlayerColor.White else "r"
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
+        return Rook(move.destination, move.piece.color)
+
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in Rook.valid_move_offsets:
-            destination_position = Position.flip_board(self.position)
-            while BoardProperties.is_valid_tile_coordinate(destination_position):
-                if Rook.in_first_column_exception(offset, destination_position.index) or \
-                        Rook.in_eighth_column_exception(offset, destination_position.index):
+            destination = Position.flip_board(self.position)
+            while BoardProperties.valid_tile(destination):
+                if Rook.in_first_column_exception(offset, destination.index) or \
+                        Rook.in_eighth_column_exception(offset, destination.index):
                     break
-                destination_position += offset
-                if BoardProperties.is_valid_tile_coordinate(destination_position):
-                    # tile = game_config.get_tile(destination_position)
-                    tile_in_next_board = game_config.get_tile(destination_position)
-                    position_in_same_board = Position.flip_board(destination_position)
-                    tile_in_this_board = game_config.get_tile(position_in_same_board)
+                destination += offset
+                if BoardProperties.valid_tile(destination):
+                    tile_in_next_board = game_state.get_tile(destination)
+                    position_in_same_board = Position.flip_board(destination)
+                    tile_in_this_board = game_state.get_tile(position_in_same_board)
                     if not tile_in_next_board.is_occupied():
                         if not tile_in_this_board.is_occupied():
-                            list_of_moves.append(MajorMove(game_config, self, destination_position))
+                            moves.append(SimpleMove(game_state, self, destination))
                         else:
                             piece_at_destination = tile_in_this_board.get_piece()
                             piece_color = piece_at_destination.color
                             if piece_color != self.color:
-                                list_of_moves.append(
-                                    AttackMove(game_config, self, destination_position,
-                                               piece_at_destination))
+                                moves.append(AttackMove(game_state, self, destination,
+                                                        piece_at_destination))
                             break
-        return list_of_moves
-
-    def move_piece(self, move):
-        return Rook(move.destination, move.piece.color)
+        return moves
 
     @staticmethod
-    def in_first_column_exception(offset, destination_position):
-        return BoardProperties.FIRST_COLUMN[destination_position] and (offset == -1)
+    def in_first_column_exception(offset, position):
+        """
+        Detects the exception for First column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in first column of the board
+        """
+        return BoardProperties.FIRST_COLUMN[position] and (offset == -1)
 
     @staticmethod
-    def in_eighth_column_exception(offset, destination_position):
-        return BoardProperties.EIGHTH_COLUMN[destination_position] and (offset == 1)
+    def in_eighth_column_exception(offset, position):
+        """
+        Detects the exception for Eighth column
+        :param offset: offset in picture
+        :param position: current Position of the piece
+        :return: True if it's in eighth column of the board
+        """
+        return BoardProperties.EIGHTH_COLUMN[position] and (offset == 1)
 
 
 class Pawn(Piece):
@@ -808,95 +1054,185 @@ class Pawn(Piece):
     valid_move_offsets = [8, 16, 7, 9]
 
     def __init__(self, position, color, is_first_move=False):
+        """
+        calls __init__ of super class and sets value for this piece
+        :param position: Position for this piece
+        :param color: color for this piece
+        :param is_first_move: True if this Pawn has not made any moves yet
+        """
         Piece.__init__(self, position, color)
         self.value = 8
         self.is_first_move = is_first_move
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __str__(self):
+        """
+        generates meaningful representation used for printing and debugging
+        :return: string representation of this piece
+        """
         return "P" if self.color == PlayerColor.White else "p"
 
     def get_direction(self):
+        """
+        returns a coefficient which is used to manipulate offsets according the Pawn color
+        :return: -1 if it in White Player's arsenal else 1
+        """
         return -1 if self.color == PlayerColor.White else 1
 
     def move_piece(self, move):
+        """
+        creates a new instance of this Piece with updated Position
+        :param move: Move due to which this piece is changed
+        :return: Updated instance of the Piece
+        """
         return Pawn(move.destination, move.piece.color)
 
-    def valid_moves(self, game_config):
-        list_of_moves = []
+    def valid_moves(self, game_state):
+        """
+        Generates a list of all the valid moves this Piece can make on the game board.
+        It uses the valid_move_offsets to generate all the moves
+        :param game_state: the current state of the game
+        :return: a list of Moves
+        """
+        moves = []
         for offset in Pawn.valid_move_offsets:
-            destination_position = Position(BoardIndex.next_board(self.position.board),
-                                            self.position.index + (offset * self.get_direction()))
-            if not BoardProperties.is_valid_tile_coordinate(destination_position):
+            next_index = self.position.index + (offset * self.get_direction())
+            dest = Position(BoardIndex.next_board(self.position.board), next_index)
+            if not BoardProperties.valid_tile(dest):
                 continue
-            if not game_config.get_tile(destination_position).is_occupied():
-                tile_in_this_board = Position.flip_board(destination_position)
-                if offset == 8 and not game_config.get_tile(tile_in_this_board).is_occupied():
-                    if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
-                        list_of_moves.append(PawnPromotion(MajorMove(game_config, self, destination_position)))
+            if not game_state.get_tile(dest).is_occupied():
+                flipped_pos = Position.flip_board(dest)
+                if offset == 8 and not game_state.get_tile(flipped_pos).is_occupied():
+                    if PlayerColor.is_pawn_promotion_square(dest, self.color):
+                        moves.append(PawnPromotion(SimpleMove(game_state, self, dest)))
                     else:
-                        list_of_moves.append(MajorMove(game_config, self, destination_position))
-                elif offset == 16 and self.is_first_move:
-                    if (self.color == PlayerColor.Black and
-                            BoardProperties.SECOND_ROW[self.position.index]) \
-                            or (self.color == PlayerColor.White and
-                                    BoardProperties.SEVENTH_ROW[self.position.index]):
-                        first_tile_position = Position(BoardIndex.next_board(self.position.board),
-                                                       self.position.index + (self.get_direction() * 8))
-                        if not (game_config.get_tile(first_tile_position).is_occupied() or
-                                    game_config.get_tile(tile_in_this_board).is_occupied()):
-                            list_of_moves.append(
-                                MajorMove(game_config, self, destination_position))
-                elif offset == 7 and not \
-                        ((BoardProperties.EIGHTH_COLUMN[self.position.index] and self.color == PlayerColor.White) or
-                             (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.Black)):
-                    tile = game_config.get_tile(tile_in_this_board)
+                        moves.append(SimpleMove(game_state, self, dest))
+                elif offset == 16 and self.is_first_move and self.first_move_config():
+                    next_pos = Position(BoardIndex.next_board(self.position.board),
+                                        self.position.index + (self.get_direction() * 8))
+                    if not (game_state.get_tile(next_pos).is_occupied() or
+                            game_state.get_tile(flipped_pos).is_occupied()):
+                        moves.append(SimpleMove(game_state, self, dest))
+                elif offset == 7 and not self.kill_on_right_exception():
+                    tile = game_state.get_tile(flipped_pos)
                     if tile.is_occupied():
-                        piece_at_destination = tile.get_piece()
-                        piece_color = piece_at_destination.color
+                        dest_piece = tile.get_piece()
+                        piece_color = dest_piece.color
                         if piece_color != self.color:
-                            if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
-                                list_of_moves.append(PawnPromotion(
-                                    AttackMove(game_config, self, destination_position, piece_at_destination)))
+                            if PlayerColor.is_pawn_promotion_square(dest, self.color):
+                                moves.append(PawnPromotion(AttackMove(game_state, self,
+                                                                      dest, dest_piece)))
                             else:
-                                list_of_moves.append(
-                                    AttackMove(game_config, self, destination_position, piece_at_destination))
+                                moves.append(AttackMove(game_state, self, dest, dest_piece))
+                elif offset == 9 and not self.kill_on_left_exception():
+                    tile = game_state.get_tile(flipped_pos)
+                    if tile.is_occupied():
+                        dest_piece = tile.get_piece()
+                        piece_color = dest_piece.color
+                        if piece_color != self.color:
+                            if PlayerColor.is_pawn_promotion_square(dest, self.color):
+                                moves.append(PawnPromotion(AttackMove(game_state, self,
+                                                                      dest, dest_piece)))
+                            else:
+                                moves.append(AttackMove(game_state, self, dest, dest_piece))
+        return moves
 
-                elif offset == 9 and not \
-                        ((BoardProperties.EIGHTH_COLUMN[self.position.index] and self.color == PlayerColor.Black) or
-                             (BoardProperties.FIRST_COLUMN[self.position.index] and self.color == PlayerColor.White)):
-                    tile = game_config.get_tile(tile_in_this_board)
-                    if tile.is_occupied():
-                        piece_at_destination = tile.get_piece()
-                        piece_color = piece_at_destination.color
-                        if piece_color != self.color:
-                            if PlayerColor.is_pawn_promotion_square(destination_position, self.color):
-                                list_of_moves.append(PawnPromotion(
-                                    AttackMove(game_config, self, destination_position, piece_at_destination)))
-                            else:
-                                list_of_moves.append(
-                                    AttackMove(game_config, self, destination_position, piece_at_destination))
-        return list_of_moves
+    def first_move_config(self):
+        """
+        checks if is configuration supports first move of Pawn
+        :return: True if possible else False
+        """
+        black = self.color == PlayerColor.Black and\
+                BoardProperties.SECOND_ROW[self.position.index]
+        white = self.color == PlayerColor.White and\
+                BoardProperties.SEVENTH_ROW[self.position.index]
+        return black or white
+
+    def kill_on_right_exception(self):
+        """
+        checks for exception of First and Eighth column when killing on right
+        :return: True is Exception holds True else False
+        """
+        white = BoardProperties.EIGHTH_COLUMN[self.position.index] and\
+                self.color == PlayerColor.White
+        black = BoardProperties.FIRST_COLUMN[self.position.index] and\
+                self.color == PlayerColor.Black
+        return white or black
+
+    def kill_on_left_exception(self):
+        """
+        checks for exception of First and Eighth column when killing on left
+        :return: True is Exception holds True else False
+        """
+        white = BoardProperties.EIGHTH_COLUMN[self.position.index] and\
+                self.color == PlayerColor.White
+        black = BoardProperties.FIRST_COLUMN[self.position.index] and\
+                self.color == PlayerColor.Black
+        return white or black
 
     def promotion_piece(self):
+        """
+        Defines the Piece, Pawn can promote to.
+        NOTE: Currently it promotes to only Queen
+        TODO: Add more functionality to this to offer more options for promotion
+        :return: Instance of Piece class at current position of piece
+        """
         return Queen(self.position, self.color)
 
 
 class Move:
-    def __init__(self, board, piece, dest):
+    __doc__ = "Class to represent a move."
+
+    def __init__(self, board, piece, destination):
+        """
+        Initialize the class with its properties passed in parameters
+        :param board: Board(can also be called Board state) on which this move occurs
+        :param piece: Piece which participate in the move
+        :param destination: destination Position at which the Piece tends to move
+        """
         self.board = board
         self.piece = piece
-        self.destination = dest
+        self.destination = destination
 
     def __repr__(self):
-        return str(self.piece) + " := " + str(self.piece.position) + "~>" + str(self.destination)
+        """
+        Suitable representation of this move in string. Used in printing and debugging
+        :return: A string representation of this move
+        """
+        return str(self.piece) + " := " +\
+               str(self.piece.position) + "~>" +\
+               str(self.destination)
+
+    def __eq__(self, other):
+        """
+        overloaded operator of "==". Used to compare an entity with this object of this
+        class
+        :param other: an entity with which we want to compare this class's object
+        :return: True if the values match else False
+        """
+        return self.destination == other.destination and self.piece == self.piece
 
     def execute_move(self):
+        """
+        Executes this move and generates a new representation of Board.
+        :return: new/same(depends on condition) Board wrapped in MoveTransition class
+                 instance
+        """
         builder = BoardBuilder()
         for piece in self.board.current_player.get_active_pieces():
             if not self.piece == piece:
@@ -907,30 +1243,69 @@ class Move:
         builder.set_next_move_maker(self.board.current_player.get_color())
         return builder.build()
 
-    def __eq__(self, other):
-        return self.destination == other.destination and self.piece == self.piece
-
     def current_coordinate(self):
+        """
+        gives current Position of the piece
+        :return: Position of piece before making move
+        """
         return self.piece.position
 
 
-class MajorMove(Move):
-    def __init__(self, board, piece, dest):
-        Move.__init__(self, board, piece, dest)
+class SimpleMove(Move):
+    __doc__ = "Represents a normal move made by a Piece"
+
+    def __init__(self, board, piece, destination):
+        """
+        initialises the class by calling __init__ of super class
+        :param board: Board on which move is made
+        :param piece: Piece which tends to move
+        :param destination: destination Position of this Move
+        """
+        Move.__init__(self, board, piece, destination)
 
     def is_attack(self):
+        """
+        returns False as it is not a Attack Move
+        :return: False
+        """
         return False
 
     def attacked_piece(self):
+        """
+        returns None as the move is not attacking any Piece
+        :return: None
+        """
         return None
 
 
 class AttackMove(Move):
-    def __init__(self, board, piece, dest, attacked_piece):
-        Move.__init__(self, board, piece, dest)
+    __doc__ = "Represents an attack move made by a Piece"
+
+    def __init__(self, board, piece, destination, attacked_piece):
+        """
+        initialises the class by calling __init__ of super class
+        :param board: Board on which move is made
+        :param piece: Piece which tends to move
+        :param destination: destination Position of this Move
+        :param attacked_piece: Piece under attack
+        """
+        Move.__init__(self, board, piece, destination)
         self.attacked_piece = attacked_piece
 
+    def __eq__(self, other):
+        """
+        overloading "==" operator to compare other entity with entity of this class
+        :param other: an entity which needs to be compared with this class's entity
+        :return: True if values match else False
+        """
+        return super.__eq__(other) and self.attacked_piece == other.attacked_piece
+
     def execute_move(self):
+        """
+        Executes this move and generates a new representation of Board.
+        :return: new/same(depends on condition) Board wrapped in MoveTransition class
+                 instance
+        """
         builder = BoardBuilder()
         for piece in self.board.current_player.get_active_pieces():
             if not self.piece == piece:
@@ -943,64 +1318,118 @@ class AttackMove(Move):
         return builder.build()
 
     def is_attack(self):
+        """
+        returns True as this is an Attack Move
+        :return: True
+        """
         return True
 
     def attacked_piece(self):
+        """
+        returns the Piece under attack
+        :return: Piece under attack
+        """
         return self.attacked_piece
-
-    def __eq__(self, other):
-        return super.__eq__(other) and self.attacked_piece == other.attacked_piece
 
 
 class PawnPromotion(Move):
+    __doc__ = "Represents the Pawn Promotion class"
+
     def __init__(self, move):
+        """
+        Initialize the class with the move getting made and the Promoted Piece
+        :param move: Move which causes PawnPromotion
+        """
         Move.__init__(self, move.board, move.piece, move.destination)
         self.move = move
         self.promotedPawn = move.piece
 
-    def is_attack(self):
-        return self.move.is_attack()
-
-    def attacked_piece(self):
-        return self.move.attacked_piece()
-
     def __repr__(self):
-        return "Q(" + str(self.move) + ")"
+        """
+        Suitable representation of this move in string. Used in printing and debugging
+        :return: A string representation of this move
+        """
+        return str(self.promotedPawn.promotion_piece()) + "(" + str(self.move) + ")"
 
     def __eq__(self, other):
+        """
+        overloading "==" operator to compare other entity with entity of this class
+        :param other: an entity which needs to be compared with this class's entity
+        :return: True if values match else False
+        """
         if isinstance(other, PawnPromotion):
             return self.move == other.move
         return False
 
+    def is_attack(self):
+        """
+        returns True if the enclosed move is an AttackMove
+        :return: True if enclosed move is AttackMove else False
+        """
+        return self.move.is_attack()
+
+    def attacked_piece(self):
+        """
+        used to retrieve attacked piece
+        :return: the Piece under attack in case its an AttackMove else None
+        """
+        return self.move.attacked_piece()
+
     def execute_move(self):
+        """
+        Executes this move and generates a new representation of Board.
+        :return: new/same(depends on condition) Board wrapped in MoveTransition class
+                 instance
+        """
         board = self.move.execute_move()
-        boardbuilder = BoardBuilder()
+        board_builder = BoardBuilder()
         for piece in board.current_player.get_active_pieces():
             if not self.promotedPawn == piece:
-                boardbuilder.set_piece(piece)
+                board_builder.set_piece(piece)
         for piece in board.current_player.get_opponent().get_active_pieces():
-            boardbuilder.set_piece(piece)
-
-        boardbuilder.set_piece(self.promotedPawn.promotion_piece().move_piece(self))
-        boardbuilder.next_move_maker = board.current_player.get_opponent().get_color()
-        return boardbuilder.build()
+            board_builder.set_piece(piece)
+        board_builder.set_piece(self.promotedPawn.promotion_piece().move_piece(self))
+        board_builder.next_move_maker = board.current_player.get_opponent().get_color()
+        return board_builder.build()
 
 
 class MoveStatus():
+    __doc__ = "A wrapper class which consists of all the status game can be"
     DONE = "Done"
     ILLEGAL_MOVE = "Illegal Move"
     LEAVES_KING_IN_CHECK = "Leaves King in check"
 
 
 class MoveTransition:
+    __doc__ = "a representation of the transition after a move is executed"
+
     def __init__(self, board, move, move_status):
+        """
+        set all board, move and status after executing that move
+        :param board: Board after executing given Move. It will be same as before if
+                      the Move was Illegal
+        :param move: Move which got executed on a board
+        :param move_status: Status of move on current state of the game.
+        NOTE: If MoveStatus.ILLEGAL_MOVE or MOVE_STATUS.LEAVES_KING_IN_CHECK is
+              encountered, the transition_board would be same as last state on which the
+              move was made
+        """
         self.transition_board = board
         self.move = move
         self.move_status = move_status
 
 
 class Player:
+    __doc__ = "Represents a player in the game and encloses all the properties related " \
+              "to it"
+
     def __init__(self, board, legal_moves, opponent_moves):
+        """
+        Initialises with board, moves and opponent moves
+        :param board: Board on which this Player is playing
+        :param legal_moves: list moves valid in this state, for this player
+        :param opponent_moves: list moves valid in this state, for other player
+        """
         self.board = board
         self.player_king = self.establish_king()
         self.legal_moves = legal_moves
@@ -1010,10 +1439,21 @@ class Player:
         pass
 
     def is_legal_move(self, move):
+        """
+        checks if the given move is legal
+        :param move: Move instance
+        :return: True if the Player has that Move in his strategy else False
+        """
         return move in self.legal_moves
 
     @staticmethod
     def calculate_attacks_on_tile(tile, opponents_moves):
+        """
+        Calculates attacks on a given tile
+        :param tile: Tile on which attacks are to be determined
+        :param opponents_moves: Moves this Player's opponent can make in current state
+        :return: list of all the AttackMoves on the given Tile
+        """
         attacking_moves = []
         for move in opponents_moves:
             if tile == Position.flip_board(move.destination):
@@ -1021,17 +1461,21 @@ class Player:
         return attacking_moves
 
     def has_escape_moves(self):
+        """
+        Checks if there any moves to escape check
+        :return: True if there exists escaping moves
+        """
         for move in self.legal_moves:
             transit = self.make_move(move)
             if transit.move_status == MoveStatus.DONE:
                 return True
         return False
 
-    def is_in_check(self):
-        return not len(self.calculate_attacks_on_tile(self.player_king.position,
-                                                      self.opponents_moves)) == 0
-
     def get_escape_moves(self):
+        """
+        gets all the moves which can avoid check
+        :return: list of moves this Player can make to avoid or escape from a check
+        """
         escape_moves = []
         for move in self.legal_moves:
             transit = self.make_move(move)
@@ -1039,44 +1483,38 @@ class Player:
                 escape_moves.append(move)
         return escape_moves
 
-    def pawn_score(self):
-        pieces = self.get_active_pieces()
-        offsets = [7, 8, 9]
-        double_pawns = {}
-        double_pawn_count = 0
-        isolated_pawn_count = 0
-        # blocked_pawn_count = 0
-        # calculating double pawns and isolated pawns
-        for piece in pieces:
-            if isinstance(piece, Pawn):
-                index = str(piece.position.board) + Position.int_to_alg(piece.position.index)[0]
-                double_pawns[index] = double_pawns.get(index, 0) + 1
-
-                def position_generator(num):
-                    return Position.flip_board(piece.position + piece.get_direction() * num)
-                positions = [position_generator(i) for i in offsets]
-                piece_at_positions = [self.board.get_tile(position).get_piece() for position in positions]
-                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[0].color == piece.color or
-                        isinstance(piece_at_positions[2], Pawn) and piece_at_positions[2].color == piece.color):
-                    isolated_pawn_count += 1
-                # if self.board.get_tile(Position.flip_board(positions[1])).get_piece().color != piece.color or \
-                #                 piece.color != piece_at_positions[1].color:
-                #     blocked_pawn_count += 1
-        for val in double_pawns.values():
-            if val > 1:
-                double_pawn_count += 1
-        # blocked pawn
-        return 0.5 * float(double_pawn_count) + isolated_pawn_count
+    def is_in_check(self):
+        """
+        looks for a check on this Player's King
+        :return: True there is a check else False
+        """
+        return not len(self.calculate_attacks_on_tile(self.player_king.position,
+                                                      self.opponents_moves)) == 0
 
     def is_in_check_mate(self):
+        """
+        looks for a checkmate situation
+        :return: True if the Player is in checkmate else False
+        """
         return self.is_in_check() and not self.has_escape_moves()
 
     def is_in_stale_mate(self):
+        """
+        looks for a checkmate situation
+        :return: True if the Player is in stalemate situation else False
+        """
         return (not self.is_in_check()) and (not self.has_escape_moves())
 
-    def make_move(self, move):
+    def make_move(self, move, flip_board=True):
+        """
+        makes a Move if the Move is legal
+        :param move: Move to be made
+        :return: MoveTransition after making given Move
+        """
         if not self.is_legal_move(move):
             return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
+        if not flip_board:
+            move.destination = move.destination.flip_board()
         transition_board = move.execute_move()
         king_attacks = Player.calculate_attacks_on_tile(
             transition_board.current_player.get_opponent().player_king.position,
@@ -1085,59 +1523,123 @@ class Player:
             return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
         return MoveTransition(transition_board, move, MoveStatus.DONE)
 
-    def make_move_without_changing_board(self, move):
-        if not self.is_legal_move(move):
-            return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
-        new_move = deepcopy(move)
-        new_move.destination = new_move.destination.flip_board()
-        transition_board = new_move.execute_move()
-        king_attacks = Player.calculate_attacks_on_tile(
-            transition_board.current_player.get_opponent().player_king.position,
-            transition_board.current_player.legal_moves)
-        if len(king_attacks) != 0:
-            return MoveTransition(self.board, new_move, MoveStatus.LEAVES_KING_IN_CHECK)
-        return MoveTransition(transition_board, new_move, MoveStatus.DONE)
+    def pawn_score(self):
+        """
+        Evaluates the current Pawns structure and assigns a score to it
+        :return: a Float value which is a score for this structure of Pawn
+        """
+        pieces = self.get_active_pieces()
+        offsets = [7, 8, 9]
+        double_pawns = {}
+        double_pawn_count = 0
+        isolated_pawn_count = 0
+        for piece in pieces:
+            if isinstance(piece, Pawn):
+                index = str(piece.position.board) + \
+                        Position.int_to_alg(piece.position.index)[0]
+                double_pawns[index] = double_pawns.get(index, 0) + 1
+                def position_generator(num):
+                    return Position.flip_board(
+                        piece.position + piece.get_direction() * num)
+                positions = [position_generator(i) for i in offsets]
+                piece_at_positions = [self.board.get_tile(position).get_piece() for
+                                      position in positions]
+                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[
+                    0].color == piece.color or
+                                isinstance(piece_at_positions[2], Pawn) and
+                                    piece_at_positions[2].color == piece.color):
+                    isolated_pawn_count += 1
+        for val in double_pawns.values():
+            if val > 1:
+                double_pawn_count += 1
+        return 0.5 * float(double_pawn_count) + isolated_pawn_count
 
 
 class WhitePlayer(Player):
+    __doc__ = "represents WhitePlayer inherits from Player class"
+
     def __init__(self, board, my_moves, other_moves):
+        """
+        calls the __init__ of super class
+        :param board: Board on which this player plays
+        :param my_moves: moves for this Player
+        :param other_moves: moves with Opponent
+        """
         Player.__init__(self, board, my_moves, other_moves)
 
     def establish_king(self):
+        """
+        ensure the King is present else raise an Exception
+        :return: King class instance
+        """
         for piece in self.get_active_pieces():
             if isinstance(piece, King):
                 piece.__class__ = King
                 return piece
-        raise Exception("Should not reach here now!")
+        raise Exception("White King missing")
 
     def get_active_pieces(self):
+        """
+        gets the current arsenal of this Player
+        :return: list of all Pieces in this Player's arsenal
+        """
         return self.board.white_piece
+
+    def get_opponent(self):
+        """
+        gets opponent of this Player
+        :return: BlackPlayer instance
+        """
+        return self.board.black_player
 
     @staticmethod
     def get_color():
+        """
+        gets color of the current color
+        :return: PlayerColor of the current player
+        """
         return PlayerColor.White
-
-    def get_opponent(self):
-        return self.board.black_player
 
 
 class BlackPlayer(Player):
     def __init__(self, board, my_moves, other_moves):
+        """
+        calls the __init__ of super class
+        :param board: Board on which this player plays
+        :param my_moves: moves for this Player
+        :param other_moves: moves with Opponent
+        """
         Player.__init__(self, board, my_moves, other_moves)
 
     def establish_king(self):
+        """
+        ensure the King is present else raise an Exception
+        :return: King class instance
+        """
         for piece in self.get_active_pieces():
             if isinstance(piece, King):
                 piece.__class__ = King
                 return piece
-        raise Exception("Should not reach here now!")
+        raise Exception("Black King missing")
 
     def get_active_pieces(self):
+        """
+        gets the current arsenal of this Player
+        :return: list of all Pieces in this Player's arsenal
+        """
         return self.board.black_piece
+
+    def get_opponent(self):
+        """
+        gets opponent of this Player
+        :return: WhitePlayer instance
+        """
+        return self.board.white_player
 
     @staticmethod
     def get_color():
+        """
+        gets color of the current color
+        :return: PlayerColor of the current player
+        """
         return PlayerColor.Black
-
-    def get_opponent(self):
-        return self.board.white_player
