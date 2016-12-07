@@ -11,6 +11,12 @@ max_depth = 2
 
 
 def does_this_move_creates_check(state, move):
+    """
+    examines the given state after making the given move if the current player is in the state of check
+    :param state: instance of Board representing a state of the game
+    :param move: instance of Move
+    :return: True if check state occurs else False
+    """
     partial_move_transition = state.current_player.make_move_without_changing_board(move)
     if partial_move_transition.move_status == MoveStatus.LEAVES_KING_IN_CHECK:
         return True
@@ -18,6 +24,11 @@ def does_this_move_creates_check(state, move):
 
 
 def analyse_state(state):
+    """
+    returns all the legal moves the given state can have for the current player
+    :param state: instance of Board representing a state of the game
+    :return: updated instance of state
+    """
     player = state.current_player
     player_legal_moves = []
     for move in player.legal_moves:
@@ -27,6 +38,11 @@ def analyse_state(state):
 
 
 def get_current_and_opponent_players(state):
+    """
+    identifies which team color the program is playing as and the opponent
+    :param state: instance of Board representing a state of the game
+    :return: a list where 1st element is our team and 2nd element is the opponent
+    """
     if my_team_color == PlayerColor.White:
         return [state.white_player, state.black_player]
     else:
@@ -34,6 +50,12 @@ def get_current_and_opponent_players(state):
 
 
 def evaluate_state(my_player, other_player):
+    """
+    calculates and evaluates a score for the state
+    :param my_player: an instance of the Player class representing our team
+    :param other_player: an instance of the Player class representing the opponent
+    :return: an integer score that evaluates the state
+    """
     evaluation = sum(my_player.get_active_pieces()) - sum(other_player.get_active_pieces())
     my_pawn_score = my_player.pawn_score()
     other_pawn_score = other_player.pawn_score()
@@ -47,6 +69,11 @@ def evaluate_state(my_player, other_player):
 
 
 def alpha_beta_pruning(state):
+    """
+    implements alpha-beta pruning algorithm on the given state
+    :param state: instance of Board representing a state of the game
+    :return: an instance of Move
+    """
     legal_moves = state.current_player.legal_moves
     best_move = legal_moves[0]
     possible_score = float("-inf")
@@ -65,6 +92,14 @@ def alpha_beta_pruning(state):
 
 
 def alpha_beta_minimizer(state, alpha, beta, depth=1):
+    """
+    minimizer node analyzing the opponents moves
+    :param state: instance of Board representing a state of the game
+    :param alpha: an integer value representing the lower bound for apb
+    :param beta: an integer value representing the upper bound for apb
+    :param depth: an integer value representing how deep into the search tree apb goes
+    :return: an integer value that chooses the minimum from the child nodes
+    """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == max_depth:
         return (5 / depth) * evaluate_state(my_player, other_player)
@@ -82,6 +117,14 @@ def alpha_beta_minimizer(state, alpha, beta, depth=1):
 
 
 def alpha_beta_maximizer(state, alpha, beta, depth=1):
+    """
+    maximizer node analyzing our teams' moves
+    :param state: instance of Board representing a state of the game
+    :param alpha: an integer value representing the lower bound for apb
+    :param beta: an integer value representing the upper bound for apb
+    :param depth: an integer value representing how deep into the search tree apb goes
+    :return: an integer value that chooses the maximum from the child nodes
+    """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == max_depth:
         return (5 / depth) * evaluate_state(my_player, other_player)
@@ -103,6 +146,11 @@ def alpha_beta_maximizer(state, alpha, beta, depth=1):
 
 
 def min_max(state):
+    """
+    implements mini-max algorithm on the given state
+    :param state: instance of Board representing a state of the game
+    :return: an instance of Move
+    """
     legal_moves = state.current_player.legal_moves
     best_move = legal_moves[0]
     best_score = float("-inf")
@@ -118,6 +166,12 @@ def min_max(state):
 
 
 def minimizer(state, depth=1):
+    """
+    minimizer node analyzing the opponents moves
+    :param state: instance of Board representing a state of the game
+    :param depth: an integer value representing how deep into the search tree mini-max goes
+    :return: an integer value that chooses the minimum from the child nodes
+    """
     my_piece, other_piece = get_current_and_opponent_players(state)
     if depth == max_depth:
         return (5 / depth) * evaluate_state(my_piece, other_piece)
@@ -134,6 +188,12 @@ def minimizer(state, depth=1):
 
 
 def maximizer(state, depth=1):
+    """
+    maximizer node analyzing the opponents moves
+    :param state: instance of Board representing a state of the game
+    :param depth: an integer value representing how deep into the search tree mini-max goes
+    :return: an integer value that chooses the maximum from the child nodes
+    """
     my_piece, other_piece = get_current_and_opponent_players(state)
     if depth == max_depth:
         return (5 / depth) * evaluate_state(my_piece, other_piece)
@@ -154,6 +214,11 @@ def maximizer(state, depth=1):
 
 
 def generate_move_sentence(move):
+    """
+    generates a syntaxually valid move sentence
+    :param move: an instance of Move
+    :return: a string value with a valid move to communicate to referee
+    """
     list_of_values = list()
     list_of_values.append(my_team_color)
     list_of_values.append("moves")
@@ -167,6 +232,10 @@ def generate_move_sentence(move):
 
 
 def choose_move():
+    """
+    looks at all legal moves and implements a search algorithm to find best move
+    :return: an instance of Move
+    """
     player_legal_moves = game.current_player.legal_moves
     if len(player_legal_moves) == 0:
         sys.stdout.write(my_team_color + " surrenders\n")
@@ -181,6 +250,11 @@ def choose_move():
 
 
 def make_move(move):
+    """
+    implements a move on the current game state
+    :param move: an instance of Move
+    :return: an updated instance of Board after implementing Move
+    """
     move_transition = game.current_player.make_move(move)
     if not move_transition.move_status == MoveStatus.DONE:
         sys.stdout.write(my_team_color + " surrenders\n")
@@ -190,6 +264,16 @@ def make_move(move):
 
 
 def text_to_move(moves, piece, board, source, destination):
+    """
+    searches the given list of moves and finds the move with the characteristics
+    of the other parameters
+    :param moves: list of instances of Move
+    :param piece: a string character representing a piece
+    :param board: a string character representing the board
+    :param source: a string representing the start position of move
+    :param destination: a string representing the destination of move
+    :return: an instance of Move
+    """
     for move in moves:
         if str(move.piece).upper() == piece \
                 and move.piece.position.board == board \
@@ -199,6 +283,10 @@ def text_to_move(moves, piece, board, source, destination):
 
 
 def create_custom_board():
+    """
+    creates a custom board for testing purposes
+    :return: an instance of Board
+    """
     game_builder = BoardBuilder()
     game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 14), PlayerColor.White))
     game_builder.set_piece(King(Position(BoardIndex.Board_One, 4), PlayerColor.White))
