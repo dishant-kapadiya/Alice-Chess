@@ -1,23 +1,19 @@
 import sys
-import random
 import time
 from aliceengine import *
-
-########################################################################################################################
-
-"""Generating sequence of meanigful messages"""
 
 max_depth = 2
 
 
 def does_this_move_creates_check(state, move):
     """
-    examines the given state after making the given move if the current player is in the state of check
+    examines the given state after making the given move if the current player is in the
+    state of check
     :param state: instance of Board representing a state of the game
     :param move: instance of Move
     :return: True if check state occurs else False
     """
-    partial_move_transition = state.current_player.make_move_without_changing_board(move)
+    partial_move_transition = state.current_player.make_move(move, flip_board=True)
     if partial_move_transition.move_status == MoveStatus.LEAVES_KING_IN_CHECK:
         return True
     return False
@@ -64,8 +60,9 @@ def evaluate_state(my_player, other_player):
     return evaluation + 0.5 * (my_pawn_score - other_pawn_score) + 0.1 * (my_mobility - other_mobility)
 
 
-"""#####################################################################################################################
-############################################### Alpha-Beta Pruning ##################################################"""
+"""#######################################################################################
+################################## Alpha-Beta Pruning ####################################
+#######################################################################################"""
 
 
 def alpha_beta_pruning(state):
@@ -84,14 +81,15 @@ def alpha_beta_pruning(state):
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
             analyse_state(next_state.transition_board)
-            possible_score = max(possible_score, alpha_beta_minimizer(next_state.transition_board, alpha, beta))
+            possible_score = max(possible_score, alpha_beta_min(next_state.transition_board,
+                                                                alpha, beta))
             if old_score < possible_score:
                 best_move = move
             alpha = max(alpha, possible_score)
     return best_move
 
 
-def alpha_beta_minimizer(state, alpha, beta, depth=1):
+def alpha_beta_min(state, alpha, beta, depth=1):
     """
     minimizer node analyzing the opponents moves
     :param state: instance of Board representing a state of the game
@@ -109,14 +107,14 @@ def alpha_beta_minimizer(state, alpha, beta, depth=1):
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
             analyse_state(next_state.transition_board)
-            val = min(val, alpha_beta_maximizer(next_state.transition_board, alpha, beta, depth + 1))
+            val = min(val, alpha_beta_max(next_state.transition_board, alpha, beta, depth + 1))
             if val < alpha:
                 return val
             beta = min(beta, val)
     return val
 
 
-def alpha_beta_maximizer(state, alpha, beta, depth=1):
+def alpha_beta_max(state, alpha, beta, depth=1):
     """
     maximizer node analyzing our teams' moves
     :param state: instance of Board representing a state of the game
@@ -134,15 +132,16 @@ def alpha_beta_maximizer(state, alpha, beta, depth=1):
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
             analyse_state(next_state.transition_board)
-            val = max(val, alpha_beta_minimizer(next_state.transition_board, alpha, beta, depth + 1))
+            val = max(val, alpha_beta_min(next_state.transition_board, alpha, beta, depth + 1))
             if val > beta:
                 return val
             alpha = max(alpha, val)
     return val
 
 
-"""#####################################################################################################################
-#################################################### MIN MAX ########################################################"""
+"""#######################################################################################
+########################################## MIN-MAX #######################################
+#######################################################################################"""
 
 
 def min_max(state):
@@ -169,7 +168,7 @@ def minimizer(state, depth=1):
     """
     minimizer node analyzing the opponents moves
     :param state: instance of Board representing a state of the game
-    :param depth: an integer value representing how deep into the search tree mini-max goes
+    :param depth: an integer value representing how deep into the search tree minimax goes
     :return: an integer value that chooses the minimum from the child nodes
     """
     my_piece, other_piece = get_current_and_opponent_players(state)
@@ -191,7 +190,7 @@ def maximizer(state, depth=1):
     """
     maximizer node analyzing the opponents moves
     :param state: instance of Board representing a state of the game
-    :param depth: an integer value representing how deep into the search tree mini-max goes
+    :param depth: an integer value representing how deep into the search tree minimax goes
     :return: an integer value that chooses the maximum from the child nodes
     """
     my_piece, other_piece = get_current_and_opponent_players(state)
@@ -209,8 +208,8 @@ def maximizer(state, depth=1):
     return best_score
 
 
-"""#####################################################################################################################
-#####################################################################################################################"""
+"""#######################################################################################
+#######################################################################################"""
 
 
 def generate_move_sentence(move):
@@ -240,8 +239,8 @@ def choose_move():
     if len(player_legal_moves) == 0:
         sys.stdout.write(my_team_color + " surrenders\n")
         sys.exit(0)
-    # move = min_max(game)
     t0 = time.time()
+    # move = min_max(game)
     move = alpha_beta_pruning(game)
     t1 = time.time()
     times.append(t1 - t0)
@@ -258,7 +257,7 @@ def make_move(move):
     move_transition = game.current_player.make_move(move)
     if not move_transition.move_status == MoveStatus.DONE:
         sys.stdout.write(my_team_color + " surrenders\n")
-        debug_file.write("move_transition.move_status != MoveStatus.DONE")
+        debug.write("move_transition.move_status != MoveStatus.DONE")
         sys.exit(0)
     return move_transition.transition_board
 
@@ -297,16 +296,15 @@ def create_custom_board():
 end = False
 game = Board.create_standard_board()
 # game = create_custom_board()
-evaluate_state(game.white_player, game.black_player)
+# evaluate_state(game.white_player, game.black_player)
 analyse_state(game)
 my_team_color = None
 my_team = None
 # print min_max(game)
-debug_file = open('debug.txt', 'w')
+debug = open('debug.txt', 'w')
 times = []
 while not end:
     input_message = raw_input()
-
     if "you are " in input_message:
         if "black" in input_message:
             my_team_color = PlayerColor.Black
@@ -322,27 +320,28 @@ while not end:
     elif "moves" in input_message:
         message = input_message.split()
         assert game.current_player.get_color() == message[0]
-        move = text_to_move(game.current_player.legal_moves, message[2], message[4], message[5], message[7])
+        move = text_to_move(game.current_player.legal_moves, message[2], message[4],
+                            message[5], message[7])
         choose_move()
         game = make_move(move)
 
         if game.current_player.get_color() == my_team.get_color():
             analyse_state(game)
-            # print game.current_player.legal_moves
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
-            debug_file.write("move occured\n")
+            debug.write("move occured\n")
         else:
             sys.stdout.write(my_team_color + " surrenders\n")
-            debug_file.write("because game.current_player.get_color() != my_team.get_color()")
+            debug.write("because game.current_player.get_color() != my_team.get_color()")
         """
         print game.current_player.legal_moves
         print game
         message1 = raw_input()
         message1 = message1.split()
         assert game.current_player.get_color() == message1[0]
-        move = text_to_move(game.current_player.legal_moves, message1[2], message1[4], message1[5], message1[7])
+        move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
+                            message1[5], message1[7])
         game = make_move(move)
         """
 
