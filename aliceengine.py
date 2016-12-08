@@ -556,6 +556,14 @@ class Piece:
 class King(Piece):
     __doc__ = "Implements a King class by inheriting Piece class."
     valid_move_offsets = [-9, -8, -7, -1, 1, 7, 8, 9]
+    piece_square_table = [-30,-40,-40,-50,-50,-40,-40,-30,
+                          -30,-40,-40,-50,-50,-40,-40,-30,
+                          -30,-40,-40,-50,-50,-40,-40,-30,
+                          -30,-40,-40,-50,-50,-40,-40,-30,
+                          -20,-30,-30,-40,-40,-30,-30,-20,
+                          -10,-20,-20,-20,-20,-20,-20,-10,
+                           20, 20,  0,  0,  0,  0, 20, 20,
+                           20, 30, 10,  0,  0, 10, 30, 20]
 
     def __init__(self, position, color):
         """
@@ -564,7 +572,11 @@ class King(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        self.value = 13
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 2000 + Pawn.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -654,6 +666,14 @@ class King(Piece):
 class Queen(Piece):
     __doc__ = """Implements a Queen class by inheriting Piece class."""
     valid_move_offsets = [-9, -8, -7, -1, 1, 7, 8, 9]
+    piece_square_table = [-20,-10,-10, -5, -5,-10,-10,-20,
+                          -10,  0,  0,  0,  0,  0,  0,-10,
+                          -10,  0,  5,  5,  5,  5,  0,-10,
+                           -5,  0,  5,  5,  5,  5,  0, -5,
+                            0,  0,  5,  5,  5,  5,  0, -5,
+                          -10,  5,  5,  5,  5,  5,  0,-10,
+                          -10,  0,  5,  0,  0,  0,  0,-10,
+                          -20,-10,-10, -5, -5,-10,-10,-20]
 
     def __init__(self, position, color):
         """
@@ -662,7 +682,11 @@ class Queen(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        self.value = 12
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 900 + Queen.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -754,6 +778,14 @@ class Queen(Piece):
 class Bishop(Piece):
     __doc__ = """Implements a Bishop class by inheriting Piece class."""
     valid_move_offsets = [-9, -7, 7, 9]
+    piece_square_table = [-20,-10,-10,-10,-10,-10,-10,-20,
+                          -10,  0,  0,  0,  0,  0,  0,-10,
+                          -10,  0,  5, 10, 10,  5,  0,-10,
+                          -10,  5,  5, 10, 10,  5,  5,-10,
+                          -10,  0, 10, 10, 10, 10,  0,-10,
+                          -10, 10, 10, 10, 10, 10, 10,-10,
+                          -10,  5,  0,  0,  0,  0,  5,-10,
+                          -20,-10,-10,-10,-10,-10,-10,-20,]
 
     def __init__(self, position, color):
         """
@@ -762,7 +794,11 @@ class Bishop(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        self.value = 11
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 330 + Bishop.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -852,6 +888,14 @@ class Bishop(Piece):
 class Knight(Piece):
     __doc__ = """Implements a Knight class by inheriting Piece class."""
     valid_move_offsets = [-17, -15, -10, -6, 6, 10, 15, 17]
+    piece_square_table = [-50,-40,-30,-30,-30,-30,-40,-50,
+                          -40,-20,  0,  0,  0,  0,-20,-40,
+                          -30,  0, 10, 15, 15, 10,  0,-30,
+                          -30,  5, 15, 20, 20, 15,  5,-30,
+                          -30,  0, 15, 20, 20, 15,  0,-30,
+                          -30,  5, 10, 15, 15, 10,  5,-30,
+                          -40,-20,  0,  5,  5,  0,-20,-40,
+                          -50,-40,-30,-30,-30,-30,-40,-50,]
 
     def __init__(self, position, color):
         """
@@ -860,7 +904,11 @@ class Knight(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        self.value = 10
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 320 + Knight.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -976,6 +1024,14 @@ class Knight(Piece):
 class Rook(Piece):
     __doc__ = """Implements a Rook class by inheriting Piece class."""
     valid_move_offsets = [-8, -1, 1, 8]
+    piece_square_table = [0,  0,  0,  0,  0,  0,  0,  0,
+                          5, 10, 10, 10, 10, 10, 10,  5,
+                         -5,  0,  0,  0,  0,  0,  0, -5,
+                         -5,  0,  0,  0,  0,  0,  0, -5,
+                         -5,  0,  0,  0,  0,  0,  0, -5,
+                         -5,  0,  0,  0,  0,  0,  0, -5,
+                         -5,  0,  0,  0,  0,  0,  0, -5,
+                          0,  0,  0,  5,  5,  0,  0,  0]
 
     def __init__(self, position, color):
         """
@@ -984,7 +1040,11 @@ class Rook(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        self.value = 11
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 500 + Rook.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1072,6 +1132,14 @@ class Rook(Piece):
 class Pawn(Piece):
     __doc__ = """Implements a Pawn class by inheriting Piece class."""
     valid_move_offsets = [8, 16, 7, 9]
+    piece_square_table = [ 0,  0,  0,  0,  0,  0,  0,  0,
+                          50, 50, 50, 50, 50, 50, 50, 50,
+                          10, 10, 20, 30, 30, 20, 10, 10,
+                           5,  5, 10, 25, 25, 10,  5,  5,
+                           0,  0,  0, 20, 20,  0,  0,  0,
+                           5, -5,-10,  0,  0,-10, -5,  5,
+                           5, 10, 10,-20,-20, 10, 10,  5,
+                           0,  0,  0,  0,  0,  0,  0,  0]
 
     def __init__(self, position, color, is_first_move=False):
         """
@@ -1081,7 +1149,11 @@ class Pawn(Piece):
         :param is_first_move: True if this Pawn has not made any moves yet
         """
         Piece.__init__(self, position, color)
-        self.value = 8
+        if self.color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        else:
+            lookup_index = self.position.index
+        self.value = 100 + Pawn.piece_square_table[lookup_index]
         self.is_first_move = is_first_move
 
     def __add__(self, other):

@@ -31,7 +31,7 @@ def analyse_state(state):
     for move in player.legal_moves:
         if not does_this_move_creates_check(state, move):
             player_legal_moves.append(move)
-    player_legal_moves = sort_moves(player_legal_moves)
+    player_legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
     player.legal_moves = player_legal_moves
 
 
@@ -310,7 +310,7 @@ end = False
 game = Board.create_standard_board()
 # game = create_custom_board()
 # evaluate_state(game.white_player, game.black_player)
-analyse_state(game)
+# analyse_state(game)
 my_team_color = None
 my_team = None
 # print min_max(game)
