@@ -1,6 +1,7 @@
 import sys
 import time
 from aliceengine import *
+import operator
 
 max_depth = 2
 
@@ -30,7 +31,18 @@ def analyse_state(state):
     for move in player.legal_moves:
         if not does_this_move_creates_check(state, move):
             player_legal_moves.append(move)
+    player_legal_moves = sort_moves(player_legal_moves)
     player.legal_moves = player_legal_moves
+
+
+def sort_moves(moves):
+    """
+    give a list of moves, sort them according to better to worse order. refers the
+    value of a move stored as an entity of the move class
+    :param moves: list of Moves
+    :return: updated list of Moves
+    """
+    return moves.sort(key=operator.attrgetter('value'), reverse=True)
 
 
 def get_current_and_opponent_players(state):
@@ -56,8 +68,9 @@ def evaluate_state(my_player, other_player):
     my_pawn_score = my_player.pawn_score()
     other_pawn_score = other_player.pawn_score()
     my_mobility = len(my_player.legal_moves) + float(1 / len(other_player.legal_moves))
-    other_mobility = len(other_player.legal_moves) + float(1 / len(my_player.legal_moves))
-    return evaluation + 0.5 * (my_pawn_score - other_pawn_score) + 0.1 * (my_mobility - other_mobility)
+    other_mobility = len(other_player.legal_moves) + float(1 / len(other_player.legal_moves))
+    return evaluation + 0.5 * (my_pawn_score - other_pawn_score) + \
+           0.1 * (my_mobility - other_mobility)
 
 
 """#######################################################################################
@@ -322,9 +335,8 @@ while not end:
         assert game.current_player.get_color() == message[0]
         move = text_to_move(game.current_player.legal_moves, message[2], message[4],
                             message[5], message[7])
-        choose_move()
+        # choose_move()
         game = make_move(move)
-
         if game.current_player.get_color() == my_team.get_color():
             analyse_state(game)
             move = choose_move()

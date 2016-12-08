@@ -519,6 +519,26 @@ class Piece:
     def move_piece(self, move):
         pass
 
+    def __mul__(self, other):
+        """
+        overloads the multiplication operator
+        :param other:
+        :return:
+        """
+        if isinstance(other, (int, float, long)):
+            return self.value * other
+        return other
+
+    def __rmul__(self, other):
+        """
+        overloads the multiplication operator
+        :param other:
+        :return:
+        """
+        if isinstance(other, (int, float, long)):
+            return self.value * other
+        return other
+
     def __eq__(self, other):
         """
         overloaded operator of "==". used to compare value of other with the instance
@@ -1208,6 +1228,7 @@ class Move:
         self.board = board
         self.piece = piece
         self.destination = destination
+        self.value = 3
 
     def __repr__(self):
         """
@@ -1262,6 +1283,7 @@ class SimpleMove(Move):
         :param destination: destination Position of this Move
         """
         Move.__init__(self, board, piece, destination)
+        self.value = 4
 
     def is_attack(self):
         """
@@ -1291,6 +1313,7 @@ class AttackMove(Move):
         """
         Move.__init__(self, board, piece, destination)
         self.attacked_piece = attacked_piece
+        self.value = 5 * self.attacked_piece
 
     def __eq__(self, other):
         """
@@ -1343,6 +1366,7 @@ class PawnPromotion(Move):
         Move.__init__(self, move.board, move.piece, move.destination)
         self.move = move
         self.promotedPawn = move.piece
+        self.value = 2 * move.value
 
     def __repr__(self):
         """
@@ -1505,6 +1529,36 @@ class Player:
         """
         return (not self.is_in_check()) and (not self.has_escape_moves())
 
+    def pawn_score(self):
+        """
+        Evaluates the current Pawns structure and assigns a score to it
+        :return:
+        """
+        pieces = self.get_active_pieces()
+        offsets = [7, 8, 9]
+        double_pawns = {}
+        double_pawn_count = 0
+        isolated_pawn_count = 0
+        for piece in pieces:
+            if isinstance(piece, Pawn):
+                index = str(piece.position.board) + \
+                    Position.int_to_alg(piece.position.index)[0]
+                double_pawns[index] = double_pawns.get(index, 0) + 1
+
+                def position_generator(num):
+                    return Position.flip_board(piece.position + piece.get_direction() * num)
+                positions = [position_generator(i) for i in offsets]
+                piece_at_positions = [self.board.get_tile(position).get_piece() for
+                                      position in positions]
+                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[
+                    0].color == piece.color or isinstance(piece_at_positions[2], Pawn) and
+                        piece_at_positions[2].color == piece.color):
+                    isolated_pawn_count += 1
+        for val in double_pawns.values():
+            if val > 1:
+                double_pawn_count += 1
+        return 0.5 * float(double_pawn_count) + isolated_pawn_count
+
     def make_move(self, move, flip_board=True):
         """
         makes a Move if the Move is legal
@@ -1522,37 +1576,6 @@ class Player:
         if len(king_attacks) != 0:
             return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
         return MoveTransition(transition_board, move, MoveStatus.DONE)
-
-    def pawn_score(self):
-        """
-        Evaluates the current Pawns structure and assigns a score to it
-        :return: a Float value which is a score for this structure of Pawn
-        """
-        pieces = self.get_active_pieces()
-        offsets = [7, 8, 9]
-        double_pawns = {}
-        double_pawn_count = 0
-        isolated_pawn_count = 0
-        for piece in pieces:
-            if isinstance(piece, Pawn):
-                index = str(piece.position.board) + \
-                        Position.int_to_alg(piece.position.index)[0]
-                double_pawns[index] = double_pawns.get(index, 0) + 1
-                def position_generator(num):
-                    return Position.flip_board(
-                        piece.position + piece.get_direction() * num)
-                positions = [position_generator(i) for i in offsets]
-                piece_at_positions = [self.board.get_tile(position).get_piece() for
-                                      position in positions]
-                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[
-                    0].color == piece.color or
-                                isinstance(piece_at_positions[2], Pawn) and
-                                    piece_at_positions[2].color == piece.color):
-                    isolated_pawn_count += 1
-        for val in double_pawns.values():
-            if val > 1:
-                double_pawn_count += 1
-        return 0.5 * float(double_pawn_count) + isolated_pawn_count
 
 
 class WhitePlayer(Player):
@@ -1602,6 +1625,8 @@ class WhitePlayer(Player):
 
 
 class BlackPlayer(Player):
+    __doc__ = "represents BlackPlayer inherits from Player class"
+
     def __init__(self, board, my_moves, other_moves):
         """
         calls the __init__ of super class
