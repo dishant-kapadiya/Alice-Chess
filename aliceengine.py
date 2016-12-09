@@ -576,7 +576,7 @@ class King(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 2000 + Pawn.piece_square_table[lookup_index]
+        self.value = 200 + Pawn.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -686,7 +686,7 @@ class Queen(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 900 + Queen.piece_square_table[lookup_index]
+        self.value = 90 + Queen.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -798,7 +798,7 @@ class Bishop(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 330 + Bishop.piece_square_table[lookup_index]
+        self.value = 33 + Bishop.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -908,7 +908,7 @@ class Knight(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 320 + Knight.piece_square_table[lookup_index]
+        self.value = 32 + Knight.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1044,7 +1044,7 @@ class Rook(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 500 + Rook.piece_square_table[lookup_index]
+        self.value = 50 + Rook.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1153,7 +1153,7 @@ class Pawn(Piece):
             lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
         else:
             lookup_index = self.position.index
-        self.value = 100 + Pawn.piece_square_table[lookup_index]
+        self.value = 10 + Pawn.piece_square_table[lookup_index]
         self.is_first_move = is_first_move
 
     def __add__(self, other):
@@ -1220,7 +1220,7 @@ class Pawn(Piece):
                     if not (game_state.get_tile(next_pos).is_occupied() or
                             game_state.get_tile(flipped_pos).is_occupied()):
                         moves.append(SimpleMove(game_state, self, dest))
-                elif offset == 7 and not self.kill_on_right_exception():
+                elif offset == 7 and not self.kill_on_left_exception():
                     tile = game_state.get_tile(flipped_pos)
                     if tile.is_occupied():
                         dest_piece = tile.get_piece()
@@ -1231,7 +1231,7 @@ class Pawn(Piece):
                                                                       dest, dest_piece)))
                             else:
                                 moves.append(AttackMove(game_state, self, dest, dest_piece))
-                elif offset == 9 and not self.kill_on_left_exception():
+                elif offset == 9 and not self.kill_on_right_exception():
                     tile = game_state.get_tile(flipped_pos)
                     if tile.is_occupied():
                         dest_piece = tile.get_piece()
@@ -1261,9 +1261,9 @@ class Pawn(Piece):
         :return: True is Exception holds True else False
         """
         white = BoardProperties.EIGHTH_COLUMN[self.position.index] and\
-                self.color == PlayerColor.White
-        black = BoardProperties.FIRST_COLUMN[self.position.index] and\
                 self.color == PlayerColor.Black
+        black = BoardProperties.FIRST_COLUMN[self.position.index] and\
+                self.color == PlayerColor.White
         return white or black
 
     def kill_on_left_exception(self):
@@ -1602,36 +1602,6 @@ class Player:
         :return: True if the Player is in stalemate situation else False
         """
         return (not self.is_in_check()) and (not self.has_escape_moves())
-
-    def pawn_score(self):
-        """
-        Evaluates the current Pawns structure and assigns a score to it
-        :return:
-        """
-        pieces = self.get_active_pieces()
-        offsets = [7, 8, 9]
-        double_pawns = {}
-        double_pawn_count = 0
-        isolated_pawn_count = 0
-        for piece in pieces:
-            if isinstance(piece, Pawn):
-                index = str(piece.position.board) + \
-                    Position.int_to_alg(piece.position.index)[0]
-                double_pawns[index] = double_pawns.get(index, 0) + 1
-
-                def position_generator(num):
-                    return Position.flip_board(piece.position + piece.get_direction() * num)
-                positions = [position_generator(i) for i in offsets]
-                piece_at_positions = [self.board.get_tile(position).get_piece() for
-                                      position in positions]
-                if not (isinstance(piece_at_positions[0], Pawn) and piece_at_positions[
-                    0].color == piece.color or isinstance(piece_at_positions[2], Pawn) and
-                        piece_at_positions[2].color == piece.color):
-                    isolated_pawn_count += 1
-        for val in double_pawns.values():
-            if val > 1:
-                double_pawn_count += 1
-        return 0.5 * float(double_pawn_count) + isolated_pawn_count
 
     def make_move(self, move):
         """

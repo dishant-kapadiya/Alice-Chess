@@ -2,7 +2,7 @@ import sys
 import time
 from aliceengine import *
 import operator
-from copy import deepcopy
+import random
 
 max_depth = 2
 
@@ -69,12 +69,9 @@ def evaluate_state(my_player, other_player):
     :return: an integer score that evaluates the state
     """
     evaluation = sum(my_player.get_active_pieces()) - sum(other_player.get_active_pieces())
-    my_pawn_score = my_player.pawn_score()
-    other_pawn_score = other_player.pawn_score()
-    my_mobility = len(my_player.legal_moves) + float(1 / len(other_player.legal_moves))
-    other_mobility = len(other_player.legal_moves) + float(1 / len(other_player.legal_moves))
-    return evaluation + 0.5 * (my_pawn_score - other_pawn_score) + \
-           0.1 * (my_mobility - other_mobility)
+    my_mobility = len(my_player.legal_moves)
+    other_mobility = len(other_player.legal_moves)
+    return evaluation + 0.1 * (my_mobility - other_mobility)
 
 
 """#######################################################################################
@@ -258,10 +255,11 @@ def choose_move():
         sys.exit(0)
     t0 = time.time()
     # move = min_max(game)
-    move = alpha_beta_pruning(game)
+    # move = alpha_beta_pruning(game)
     t1 = time.time()
     times.append(t1 - t0)
-    # move_index = random.randrange(len(player_legal_moves))
+    move_index = random.randrange(len(player_legal_moves))
+    move = player_legal_moves[move_index]
     return move
 
 
@@ -304,22 +302,25 @@ def create_custom_board():
     :return: an instance of Board
     """
     game_builder = BoardBuilder()
-    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 14), PlayerColor.White))
-    game_builder.set_piece(King(Position(BoardIndex.Board_One, 4), PlayerColor.White))
-    game_builder.set_piece(Rook(Position(BoardIndex.Board_One, 32), PlayerColor.White))
-    game_builder.set_piece(Queen(Position(BoardIndex.Board_One, 51), PlayerColor.White))
+    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 48), PlayerColor.White))
+    # game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 55), PlayerColor.White))
+    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 41), PlayerColor.Black))
+    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 39), PlayerColor.Black))
+    # game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 48), PlayerColor.Black))
+    # game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 55), PlayerColor.Black))
+
+    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 16), PlayerColor.Black))
+    game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 23), PlayerColor.Black))
     game_builder.set_piece(King(Position(BoardIndex.Board_Two, 48), PlayerColor.Black))
+    game_builder.set_piece(King(Position(BoardIndex.Board_Two, 50), PlayerColor.White))
     return game_builder.build()
 
 
 end = False
 # game = Board.create_standard_board()
 game = create_custom_board()
-# evaluate_state(game.white_player, game.black_player)
-# analyse_state(game)
 my_team_color = None
 my_team = None
-# print min_max(game)
 debug = open('debug.txt', 'w')
 times = []
 while not end:
@@ -332,26 +333,16 @@ while not end:
             my_team_color = PlayerColor.White
             my_team = game.white_player
             analyse_state(game)
-            print game.current_player.legal_moves
-            print game
-            message1 = raw_input()
-            message1 = message1.split()
-            assert game.current_player.get_color() == message1[0]
-            move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
-                                message1[5], message1[7])
-            # game = make_move(move)
-            # move = choose_move()
+            move = choose_move()
             game = make_move(move)
-            # sys.stdout.write(generate_move_sentence(move))
+            sys.stdout.write(generate_move_sentence(move))
 
     elif "moves" in input_message:
         message = input_message.split()
         assert game.current_player.get_color() == message[0]
         move = text_to_move(game.current_player.legal_moves, message[2], message[4],
                             message[5], message[7])
-        # choose_move()
         game = make_move(move)
-        """
         if game.current_player.get_color() == my_team.get_color():
             analyse_state(game)
             move = choose_move()
@@ -371,7 +362,7 @@ while not end:
         move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
                             message1[5], message1[7])
         game = make_move(move)
-
+        """
 
     elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
         end = True
