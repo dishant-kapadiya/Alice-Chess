@@ -2,6 +2,7 @@ import sys
 import time
 from aliceengine import *
 import operator
+from copy import deepcopy
 
 max_depth = 2
 
@@ -14,7 +15,7 @@ def does_this_move_creates_check(state, move):
     :param move: instance of Move
     :return: True if check state occurs else False
     """
-    partial_move_transition = state.current_player.make_move(move, flip_board=True)
+    partial_move_transition = state.current_player.make_move_without_changing_board(move)
     if partial_move_transition.move_status == MoveStatus.LEAVES_KING_IN_CHECK:
         return True
     return False
@@ -113,7 +114,7 @@ def alpha_beta_min(state, alpha, beta, depth=1):
     """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == max_depth:
-        return (5 / depth) * evaluate_state(my_player, other_player)
+        return evaluate_state(my_player, other_player)
     legal_moves = state.current_player.legal_moves
     val = float("inf")
     for move in legal_moves:
@@ -138,7 +139,7 @@ def alpha_beta_max(state, alpha, beta, depth=1):
     """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == max_depth:
-        return (5 / depth) * evaluate_state(my_player, other_player)
+        return evaluate_state(my_player, other_player)
     legal_moves = state.current_player.legal_moves
     val = float("-inf")
     for move in legal_moves:
@@ -326,9 +327,17 @@ while not end:
             my_team_color = PlayerColor.White
             my_team = game.white_player
             analyse_state(game)
-            move = choose_move()
+            print game.current_player.legal_moves
+            print game
+            message1 = raw_input()
+            message1 = message1.split()
+            assert game.current_player.get_color() == message1[0]
+            move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
+                                message1[5], message1[7])
+            # game = make_move(move)
+            # move = choose_move()
             game = make_move(move)
-            sys.stdout.write(generate_move_sentence(move))
+            # sys.stdout.write(generate_move_sentence(move))
 
     elif "moves" in input_message:
         message = input_message.split()
@@ -337,6 +346,7 @@ while not end:
                             message[5], message[7])
         # choose_move()
         game = make_move(move)
+        """
         if game.current_player.get_color() == my_team.get_color():
             analyse_state(game)
             move = choose_move()
@@ -354,8 +364,9 @@ while not end:
         assert game.current_player.get_color() == message1[0]
         move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
                             message1[5], message1[7])
+        analyse_state(game)
         game = make_move(move)
-        """
+
 
     elif "wins" in input_message or "loses" in input_message or "drawn" in input_message:
         end = True
@@ -366,7 +377,7 @@ while not end:
         end = True
         sys.exit(0)
     # print choose_move()
-    # print game.current_player.legal_moves
+    print game.current_player.legal_moves
     print game
     sys.stdin.flush()
     sys.stdout.flush()

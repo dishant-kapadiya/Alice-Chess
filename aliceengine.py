@@ -1,5 +1,5 @@
 """Implements an Alice Chess Engine"""
-
+from copy import deepcopy
 
 class Position:
     __doc__ = "A composite class for a position on board. Consists of a board and index."
@@ -1355,7 +1355,7 @@ class SimpleMove(Move):
         :param destination: destination Position of this Move
         """
         Move.__init__(self, board, piece, destination)
-        self.value = 4
+        self.value = 4 * self.piece
 
     def is_attack(self):
         """
@@ -1631,7 +1631,7 @@ class Player:
                 double_pawn_count += 1
         return 0.5 * float(double_pawn_count) + isolated_pawn_count
 
-    def make_move(self, move, flip_board=True):
+    def make_move(self, move):
         """
         makes a Move if the Move is legal
         :param move: Move to be made
@@ -1639,8 +1639,6 @@ class Player:
         """
         if not self.is_legal_move(move):
             return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
-        if not flip_board:
-            move.destination = move.destination.flip_board()
         transition_board = move.execute_move()
         king_attacks = Player.calculate_attacks_on_tile(
             transition_board.current_player.get_opponent().player_king.position,
@@ -1648,6 +1646,19 @@ class Player:
         if len(king_attacks) != 0:
             return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
         return MoveTransition(transition_board, move, MoveStatus.DONE)
+
+    def make_move_without_changing_board(self, move):
+        if not self.is_legal_move(move):
+            return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
+        new_move = deepcopy(move)
+        new_move.destination = new_move.destination.flip_board()
+        transition_board = new_move.execute_move()
+        king_attacks = Player.calculate_attacks_on_tile(
+                transition_board.current_player.get_opponent().player_king.position,
+                transition_board.current_player.legal_moves)
+        if len(king_attacks) != 0:
+            return MoveTransition(self.board, new_move, MoveStatus.LEAVES_KING_IN_CHECK)
+        return MoveTransition(transition_board, new_move, MoveStatus.DONE)
 
 
 class WhitePlayer(Player):
