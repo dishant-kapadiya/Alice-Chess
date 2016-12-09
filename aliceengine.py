@@ -1574,8 +1574,10 @@ class Player:
         """
         escape_moves = []
         for move in self.legal_moves:
-            transit = self.make_move(move)
-            if transit.move_status == MoveStatus.DONE:
+            transit_here = self.make_move_without_changing_board(move)
+            transit_there = self.make_move(move)
+            if transit_here.move_status == MoveStatus.DONE and \
+                    transit_there.move_status == MoveStatus.DONE:
                 escape_moves.append(move)
         return escape_moves
 

@@ -29,10 +29,13 @@ def analyse_state(state):
     """
     player = state.current_player
     player_legal_moves = []
-    for move in player.legal_moves:
-        if not does_this_move_creates_check(state, move):
-            player_legal_moves.append(move)
-    player_legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
+    if player.is_in_check():
+        player_legal_moves = player.get_escape_moves()
+    else:
+        for move in player.legal_moves:
+            if not does_this_move_creates_check(state, move):
+                player_legal_moves.append(move)
+        player_legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
     player.legal_moves = player_legal_moves
 
 
@@ -303,13 +306,15 @@ def create_custom_board():
     game_builder = BoardBuilder()
     game_builder.set_piece(Pawn(Position(BoardIndex.Board_One, 14), PlayerColor.White))
     game_builder.set_piece(King(Position(BoardIndex.Board_One, 4), PlayerColor.White))
-    game_builder.set_piece(King(Position(BoardIndex.Board_One, 50), PlayerColor.Black))
+    game_builder.set_piece(Rook(Position(BoardIndex.Board_One, 32), PlayerColor.White))
+    game_builder.set_piece(Queen(Position(BoardIndex.Board_One, 51), PlayerColor.White))
+    game_builder.set_piece(King(Position(BoardIndex.Board_Two, 48), PlayerColor.Black))
     return game_builder.build()
 
 
 end = False
-game = Board.create_standard_board()
-# game = create_custom_board()
+# game = Board.create_standard_board()
+game = create_custom_board()
 # evaluate_state(game.white_player, game.black_player)
 # analyse_state(game)
 my_team_color = None
@@ -357,6 +362,7 @@ while not end:
             sys.stdout.write(my_team_color + " surrenders\n")
             debug.write("because game.current_player.get_color() != my_team.get_color()")
         """
+        analyse_state(game)
         print game.current_player.legal_moves
         print game
         message1 = raw_input()
@@ -364,7 +370,6 @@ while not end:
         assert game.current_player.get_color() == message1[0]
         move = text_to_move(game.current_player.legal_moves, message1[2], message1[4],
                             message1[5], message1[7])
-        analyse_state(game)
         game = make_move(move)
 
 
@@ -377,7 +382,6 @@ while not end:
         end = True
         sys.exit(0)
     # print choose_move()
-    print game.current_player.legal_moves
-    print game
+    analyse_state(game)
     sys.stdin.flush()
     sys.stdout.flush()
