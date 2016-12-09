@@ -305,6 +305,7 @@ class Board:
         using the BoardBuilder class.
         :param builder: Instance of the BoardBuilder class
         """
+        self.builder = builder
         self.game_board1 = Board.create_game_board(builder.board_config1)
         self.game_board2 = Board.create_game_board(builder.board_config2)
         self.white_piece = Board.calculate_active_piece(self.game_board1,
@@ -315,12 +316,12 @@ class Board:
                                                         PlayerColor.Black) + \
                            Board.calculate_active_piece(self.game_board2,
                                                         PlayerColor.Black)
-        self.white_legal_moves = self.calculate_moves(self.white_piece)
-        self.black_legal_moves = self.calculate_moves(self.black_piece)
-        self.white_player = WhitePlayer(self, self.white_legal_moves,
-                                        self.black_legal_moves)
-        self.black_player = BlackPlayer(self, self.black_legal_moves,
-                                        self.white_legal_moves)
+        white_legal_moves = self.calculate_moves(self.white_piece)
+        black_legal_moves = self.calculate_moves(self.black_piece)
+        self.white_player = WhitePlayer(self, white_legal_moves,
+                                        black_legal_moves)
+        self.black_player = BlackPlayer(self, black_legal_moves,
+                                        white_legal_moves)
         self.current_player = PlayerColor.opponent(builder.next_move_maker,
                                                    self.white_player,
                                                    self.black_player)
@@ -448,7 +449,7 @@ class Board:
             final_str += "{0}| {1}".format(temp[0], temp[1])
             final_str += "\n"
         last_line = "   a  b  c  d  e  f  g  h  | a  b  c  d  e  f  g  h  "
-        return final_str + last_line
+        return "\n" + final_str + last_line
 
     def get_all_legal_moves(self):
         """
@@ -572,11 +573,16 @@ class King(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        self.position_value = King.get_position_value(self.position.index, self.color)
+        self.value = 200 + self.position_value
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
-            lookup_index = self.position.index
-        self.value = 200 + Pawn.piece_square_table[lookup_index]
+            lookup_index = index
+        return King.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -682,11 +688,16 @@ class Queen(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        self.position_value = Queen.get_position_value(self.position.index, self.color)
+        self.value = 90 + self.position_value
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
-            lookup_index = self.position.index
-        self.value = 90 + Queen.piece_square_table[lookup_index]
+            lookup_index = index
+        return Queen.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -794,11 +805,16 @@ class Bishop(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        self.position_value = Bishop.get_position_value(self.position.index, self.color)
+        self.value = 33 + self.position_value
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
-            lookup_index = self.position.index
-        self.value = 33 + Bishop.piece_square_table[lookup_index]
+            lookup_index = index
+        return Bishop.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -904,11 +920,16 @@ class Knight(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        self.position_value = Knight.get_position_value(self.position.index, self.color)
+        self.value = 32 + self.position_value
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
-            lookup_index = self.position.index
-        self.value = 32 + Knight.piece_square_table[lookup_index]
+            lookup_index = index
+        return Knight.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1040,11 +1061,16 @@ class Rook(Piece):
         :param color: color for this piece
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
+        self.position_value = Rook.get_position_value(self.position.index, self.color)
+        self.value = 50 + self.position_value
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
-            lookup_index = self.position.index
-        self.value = 50 + Rook.piece_square_table[lookup_index]
+            lookup_index = index
+        return Rook.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1132,7 +1158,7 @@ class Rook(Piece):
 class Pawn(Piece):
     __doc__ = """Implements a Pawn class by inheriting Piece class."""
     valid_move_offsets = [8, 16, 7, 9]
-    piece_square_table = [ 0,  0,  0,  0,  0,  0,  0,  0,
+    piece_square_table = [60, 60, 60, 60, 60, 60, 60, 60,
                           50, 50, 50, 50, 50, 50, 50, 50,
                           10, 10, 20, 30, 30, 20, 10, 10,
                            5,  5, 10, 25, 25, 10,  5,  5,
@@ -1149,12 +1175,17 @@ class Pawn(Piece):
         :param is_first_move: True if this Pawn has not made any moves yet
         """
         Piece.__init__(self, position, color)
-        if self.color == PlayerColor.Black:
-            lookup_index = BoardProperties.NUM_TILES - self.position.index - 1
-        else:
-            lookup_index = self.position.index
-        self.value = 10 + Pawn.piece_square_table[lookup_index]
+        self.position_value = Pawn.get_position_value(self.position.index, self.color)
+        self.value = 10 + self.position_value
         self.is_first_move = is_first_move
+
+    @staticmethod
+    def get_position_value(index, color):
+        if color == PlayerColor.Black:
+            lookup_index = BoardProperties.NUM_TILES - index - 1
+        else:
+            lookup_index = index
+        return Pawn.piece_square_table[lookup_index]
 
     def __add__(self, other):
         """
@@ -1300,7 +1331,6 @@ class Move:
         self.board = board
         self.piece = piece
         self.destination = destination
-        self.value = 3
 
     def __repr__(self):
         """
@@ -1355,7 +1385,8 @@ class SimpleMove(Move):
         :param destination: destination Position of this Move
         """
         Move.__init__(self, board, piece, destination)
-        self.value = 4 * self.piece
+        self.value = self.piece.get_position_value(self.piece.position.index,
+                                                   self.piece.color)
 
     def is_attack(self):
         """
@@ -1385,7 +1416,8 @@ class AttackMove(Move):
         """
         Move.__init__(self, board, piece, destination)
         self.attacked_piece = attacked_piece
-        self.value = 5 * self.attacked_piece
+        self.value = self.piece.get_position_value(self.piece.position.index,
+                                                   self.piece.color) + self.attacked_piece
 
     def __eq__(self, other):
         """
@@ -1406,7 +1438,7 @@ class AttackMove(Move):
             if not self.piece == piece:
                 builder.set_piece(piece)
         for piece in self.board.current_player.get_opponent().get_active_pieces():
-            if not piece.position.index == self.destination.index:
+            if not piece == self.attacked_piece:
                 builder.set_piece(piece)
         builder.set_piece(self.piece.move_piece(self))
         builder.set_next_move_maker(self.board.current_player.get_color())
@@ -1609,15 +1641,28 @@ class Player:
         :param move: Move to be made
         :return: MoveTransition after making given Move
         """
-        if not self.is_legal_move(move):
-            return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
-        transition_board = move.execute_move()
-        king_attacks = Player.calculate_attacks_on_tile(
-            transition_board.current_player.get_opponent().player_king.position,
-            transition_board.current_player.legal_moves)
-        if len(king_attacks) != 0:
-            return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
-        return MoveTransition(transition_board, move, MoveStatus.DONE)
+
+        # if not self.is_legal_move(move):
+        #     return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
+        # transition_board = move.execute_move()
+        # king_attacks = Player.calculate_attacks_on_tile(
+        #     transition_board.current_player.get_opponent().player_king.position,
+        #     transition_board.current_player.legal_moves)
+        # if len(king_attacks) != 0:
+        #     return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
+        # return MoveTransition(transition_board, move, MoveStatus.DONE)
+
+        move_trans = self.make_move_without_changing_board(move)
+        if move_trans.move_status == MoveStatus.DONE:
+            transition_board = move.execute_move()
+            king_attacks = Player.calculate_attacks_on_tile(
+                transition_board.current_player.get_opponent().player_king.position,
+                transition_board.current_player.legal_moves)
+            if len(king_attacks) != 0:
+                return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
+            return MoveTransition(transition_board, move, MoveStatus.DONE)
+        else:
+            return move_trans
 
     def make_move_without_changing_board(self, move):
         if not self.is_legal_move(move):
@@ -1629,8 +1674,8 @@ class Player:
                 transition_board.current_player.get_opponent().player_king.position,
                 transition_board.current_player.legal_moves)
         if len(king_attacks) != 0:
-            return MoveTransition(self.board, new_move, MoveStatus.LEAVES_KING_IN_CHECK)
-        return MoveTransition(transition_board, new_move, MoveStatus.DONE)
+            return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
+        return MoveTransition(transition_board, move, MoveStatus.DONE)
 
 
 class WhitePlayer(Player):

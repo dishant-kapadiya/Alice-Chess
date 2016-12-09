@@ -5,6 +5,7 @@ import operator
 import random
 
 max_depth = 2
+print_msgs = False
 
 
 def does_this_move_creates_check(state, move):
@@ -15,18 +16,20 @@ def does_this_move_creates_check(state, move):
     :param move: instance of Move
     :return: True if check state occurs else False
     """
+    move.destination
     partial_move_transition = state.current_player.make_move_without_changing_board(move)
     if partial_move_transition.move_status == MoveStatus.LEAVES_KING_IN_CHECK:
         return True
     return False
 
-
+"""
 def analyse_state(state):
     """
-    returns all the legal moves the given state can have for the current player
-    :param state: instance of Board representing a state of the game
-    :return: updated instance of state
-    """
+    # returns all the legal moves the given state can have for the current player
+    # :param state: instance of Board representing a state of the game
+    # :return: updated instance of state
+"""
+    t0 = time.time()
     player = state.current_player
     player_legal_moves = []
     if player.is_in_check():
@@ -35,9 +38,10 @@ def analyse_state(state):
         for move in player.legal_moves:
             if not does_this_move_creates_check(state, move):
                 player_legal_moves.append(move)
-        player_legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
+    t1 = time.time()
+    print "Analyse take :", t1 - t0
     player.legal_moves = player_legal_moves
-
+"""
 
 def sort_moves(moves):
     """
@@ -90,11 +94,14 @@ def alpha_beta_pruning(state):
     possible_score = float("-inf")
     alpha = float("-inf")
     beta = float("inf")
+    legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
     for move in legal_moves:
         old_score = possible_score
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            if print_msgs:
+                print "Trying ", str(move)
+            # analyse_state(next_state.transition_board)
             possible_score = max(possible_score, alpha_beta_min(next_state.transition_board,
                                                                 alpha, beta))
             if old_score < possible_score:
@@ -117,12 +124,17 @@ def alpha_beta_min(state, alpha, beta, depth=1):
         return evaluate_state(my_player, other_player)
     legal_moves = state.current_player.legal_moves
     val = float("inf")
+    legal_moves.sort(key=operator.attrgetter('value'))
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            if print_msgs:
+                print "\t" * depth, depth, ": Trying ", str(move)
+            # analyse_state(next_state.transition_board)
             val = min(val, alpha_beta_max(next_state.transition_board, alpha, beta, depth + 1))
             if val < alpha:
+                if print_msgs:
+                    print depth, " : PRUNED!"
                 return val
             beta = min(beta, val)
     return val
@@ -142,17 +154,22 @@ def alpha_beta_max(state, alpha, beta, depth=1):
         return evaluate_state(my_player, other_player)
     legal_moves = state.current_player.legal_moves
     val = float("-inf")
+    legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            if print_msgs:
+                print "\t" * depth, depth, ": Trying ", str(move)
+            # analyse_state(next_state.transition_board)
             val = max(val, alpha_beta_min(next_state.transition_board, alpha, beta, depth + 1))
             if val > beta:
+                if print_msgs:
+                    print depth, " : PRUNED!"
                 return val
             alpha = max(alpha, val)
     return val
 
-
+nodes = 0
 """#######################################################################################
 ########################################## MIN-MAX #######################################
 #######################################################################################"""
@@ -170,7 +187,7 @@ def min_max(state):
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            # analyse_state(next_state.transition_board)
             score = minimizer(next_state.transition_board)
             if score > best_score:
                 best_score = score
@@ -193,7 +210,7 @@ def minimizer(state, depth=1):
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            # analyse_state(next_state.transition_board)
             score = maximizer(next_state.transition_board, depth + 1)
             if score < best_score:
                 best_score = score
@@ -215,7 +232,7 @@ def maximizer(state, depth=1):
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
-            analyse_state(next_state.transition_board)
+            # analyse_state(next_state.transition_board)
             score = minimizer(next_state.transition_board, depth + 1)
             if score > best_score:
                 best_score = score
@@ -255,11 +272,11 @@ def choose_move():
         sys.exit(0)
     t0 = time.time()
     # move = min_max(game)
-    # move = alpha_beta_pruning(game)
+    move = alpha_beta_pruning(game)
     t1 = time.time()
     times.append(t1 - t0)
-    move_index = random.randrange(len(player_legal_moves))
-    move = player_legal_moves[move_index]
+    # move_index = random.randrange(len(player_legal_moves))
+    # move = player_legal_moves[move_index]
     return move
 
 
@@ -317,8 +334,8 @@ def create_custom_board():
 
 
 end = False
-# game = Board.create_standard_board()
-game = create_custom_board()
+game = Board.create_standard_board()
+# game = create_custom_board()
 my_team_color = None
 my_team = None
 debug = open('debug.txt', 'w')
@@ -332,7 +349,7 @@ while not end:
         else:
             my_team_color = PlayerColor.White
             my_team = game.white_player
-            analyse_state(game)
+            # analyse_state(game)
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
@@ -344,7 +361,7 @@ while not end:
                             message[5], message[7])
         game = make_move(move)
         if game.current_player.get_color() == my_team.get_color():
-            analyse_state(game)
+            # analyse_state(game)
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
@@ -373,6 +390,8 @@ while not end:
         end = True
         sys.exit(0)
     # print choose_move()
-    analyse_state(game)
+    # analyse_state(game)
+    if print_msgs:
+        print game
     sys.stdin.flush()
     sys.stdout.flush()
