@@ -7,6 +7,7 @@ import random
 print_msgs = False
 common_threshold = 0.25
 
+
 def get_current_and_opponent_players(state):
     """
     identifies which team color the program is playing as and the opponent
