@@ -86,6 +86,7 @@ def alpha_beta_pruning(state):
         times.append(end_time - start_time)
         avail_time -= times[-1]
         debug.write("(" + str(current_depth) + " , " + str(times[-1]) + ")\n")
+        threshold = threshold ** current_depth
         current_depth += 1
     return best_move
 
@@ -101,7 +102,7 @@ def alpha_beta_min(state, alpha, beta, depth):
     """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == 0:
-        score = evaluate_state(my_player, other_player)
+        score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t"*depth, "(MIN)Returned = ", score
         return score
@@ -135,7 +136,7 @@ def alpha_beta_max(state, alpha, beta, depth=1):
     """
     my_player, other_player = get_current_and_opponent_players(state)
     if depth == 0:
-        score = evaluate_state(my_player, other_player)
+        score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t" * depth, "(MAX)Returned = ", score
         return score
@@ -389,7 +390,7 @@ while not end:
         sys.exit(0)
     # print choose_move()
     # analyse_state(game)
-    if print_msgs:
-        print game
+    # if print_msgs:
+    print game
     sys.stdin.flush()
     sys.stdout.flush()
