@@ -1341,14 +1341,6 @@ class Move:
                str(self.piece.position) + "~>" +\
                str(self.destination)
 
-    def __add__(self, other):
-        if isinstance(other, Move):
-            return self.value + other
-
-    def __radd__(self, other):
-        if isinstance(other, Move):
-            return self.value + other
-
     def __eq__(self, other):
         """
         overloaded operator of "==". Used to compare an entity with this object of this
@@ -1396,6 +1388,12 @@ class SimpleMove(Move):
         self.value = self.piece.get_position_value(self.piece.position.index,
                                                    self.piece.color)
 
+    def __add__(self, other):
+        return self.value + other
+
+    def __radd__(self, other):
+        return self.value + other
+
     def is_attack(self):
         """
         returns False as it is not a Attack Move
@@ -1434,6 +1432,12 @@ class AttackMove(Move):
         :return: True if values match else False
         """
         return super.__eq__(other) and self.attacked_piece == other.attacked_piece
+
+    def __add__(self, other):
+        return self.value + other
+
+    def __radd__(self, other):
+        return self.value + other
 
     def execute_move(self):
         """
@@ -1479,6 +1483,12 @@ class PawnPromotion(Move):
         self.move = move
         self.promotedPawn = move.piece
         self.value = 2 * move.value
+
+    def __add__(self, other):
+        return self.value + other
+
+    def __radd__(self, other):
+        return self.value + other
 
     def __repr__(self):
         """
