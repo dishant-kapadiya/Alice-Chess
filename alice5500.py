@@ -76,9 +76,15 @@ def alpha_beta_pruning(state):
                 if print_msgs:
                     print "Trying ", str(move)
                 # analyse_state(next_state.transition_board)
+                t0 = time.time()
                 possible_score = max(possible_score, alpha_beta_min(next_state.transition_board,
                                                                     alpha, beta,
+                                                                    avail_time,
                                                                     depth=current_depth))
+                t1 = time.time()
+                avail_time -= (t1 - t0)
+                if avail_time <= 0.1:
+                    break
                 if old_score < possible_score:
                     best_move = move
                 alpha = max(alpha, possible_score)
@@ -91,7 +97,7 @@ def alpha_beta_pruning(state):
     return best_move
 
 
-def alpha_beta_min(state, alpha, beta, depth):
+def alpha_beta_min(state, alpha, beta, avail_time, depth):
     """
     minimizer node analyzing the opponents moves
     :param state: instance of Board representing a state of the game
@@ -101,22 +107,29 @@ def alpha_beta_min(state, alpha, beta, depth):
     :return: an integer value that chooses the minimum from the child nodes
     """
     my_player, other_player = get_current_and_opponent_players(state)
-    if depth == 0:
+    if depth == 0 or avail_time <= 0.1:
         score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t"*depth, "(MIN)Returned = ", score
         return score
     legal_moves = state.current_player.legal_moves
     val = float("inf")
-    legal_moves.sort(key=operator.attrgetter('value'))
+    legal_moves.sort(key=operator.attrgetter('value'), reverse=True)
     for move in legal_moves:
         next_state = state.current_player.make_move(move)
         if next_state.move_status == MoveStatus.DONE:
             if print_msgs:
                 print "\t" * depth, depth, ": Trying ", str(move)
+            t0 = time.time()
             # analyse_state(next_state.transition_board)
             val = min(val, alpha_beta_max(next_state.transition_board, alpha, beta,
-                                          depth - 1))
+                                          avail_time, depth - 1))
+            t1 = time.time()
+            difference = t1 - t0
+            avail_time -= difference
+            if avail_time <= 0.1:
+                return val
+
             if val < alpha:
                 if print_msgs:
                     print depth, " : PRUNED!"
@@ -125,7 +138,7 @@ def alpha_beta_min(state, alpha, beta, depth):
     return val
 
 
-def alpha_beta_max(state, alpha, beta, depth=1):
+def alpha_beta_max(state, alpha, beta, avail_time, depth=1):
     """
     maximizer node analyzing our teams' moves
     :param state: instance of Board representing a state of the game
@@ -135,7 +148,7 @@ def alpha_beta_max(state, alpha, beta, depth=1):
     :return: an integer value that chooses the maximum from the child nodes
     """
     my_player, other_player = get_current_and_opponent_players(state)
-    if depth == 0:
+    if depth == 0 or avail_time <= 0.1:
         score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t" * depth, "(MAX)Returned = ", score
@@ -149,8 +162,15 @@ def alpha_beta_max(state, alpha, beta, depth=1):
             if print_msgs:
                 print "\t" * depth, depth, ": Trying ", str(move)
             # analyse_state(next_state.transition_board)
+            t0 = time.time()
             val = max(val, alpha_beta_min(next_state.transition_board, alpha, beta,
-                                          depth - 1))
+                                          avail_time, depth - 1))
+            t1 = time.time()
+            difference = t1 - t0
+            avail_time -= difference
+            if avail_time <= 0.1:
+                return val
+
             if val > beta:
                 if print_msgs:
                     print depth, " : PRUNED!"
@@ -327,6 +347,7 @@ def create_custom_board():
     builder.set_piece(Bishop(Position(BoardIndex.Board_One, 37), PlayerColor.White))
     builder.set_piece(Knight(Position(BoardIndex.Board_One, 38), PlayerColor.White))
     builder.set_piece(Rook(Position(BoardIndex.Board_One, 39), PlayerColor.White))
+    builder.set_piece(Pawn(Position(BoardIndex.Board_One, 8), PlayerColor.White))
     builder.set_next_move_maker(PlayerColor.Black)
     return builder.build()
 
@@ -390,7 +411,7 @@ while not end:
         sys.exit(0)
     # print choose_move()
     # analyse_state(game)
-    # if print_msgs:
-    print game
+    if print_msgs:
+        print game
     sys.stdin.flush()
     sys.stdout.flush()
