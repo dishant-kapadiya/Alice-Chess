@@ -35,8 +35,8 @@ def evaluate_state(my_player, other_player):
     :return: an integer score that evaluates the state
     """
     evaluation = sum(my_player.get_active_pieces()) - sum(other_player.get_active_pieces())
-    my_mobility = len(my_player.legal_moves)
-    other_mobility = len(other_player.legal_moves)
+    my_mobility = sum(my_player.legal_moves)
+    other_mobility = sum(other_player.legal_moves)
     check_bonus = 0
     if my_player.is_in_check():
         check_bonus = -50
@@ -86,7 +86,7 @@ def alpha_beta_pruning(state):
         times.append(end_time - start_time)
         avail_time -= times[-1]
         debug.write("(" + str(current_depth) + " , " + str(times[-1]) + ")\n")
-        threshold = threshold ** current_depth
+        threshold += times[-1] ** current_depth
         current_depth += 1
     return best_move
 
@@ -364,7 +364,7 @@ while not end:
             move = choose_move()
             game = make_move(move)
             sys.stdout.write(generate_move_sentence(move))
-            debug.write("move occured\n")
+            # debug.write("move occured\n")
         else:
             sys.stdout.write(my_team_color + " surrenders\n")
             # debug.write("because game.current_player.get_color() != my_team.get_color()")

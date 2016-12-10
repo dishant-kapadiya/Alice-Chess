@@ -1341,6 +1341,14 @@ class Move:
                str(self.piece.position) + "~>" +\
                str(self.destination)
 
+    def __add__(self, other):
+        if isinstance(other, Move):
+            return self.value + other
+
+    def __radd__(self, other):
+        if isinstance(other, Move):
+            return self.value + other
+
     def __eq__(self, other):
         """
         overloaded operator of "==". Used to compare an entity with this object of this
