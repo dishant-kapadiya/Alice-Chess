@@ -578,6 +578,12 @@ class King(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -693,6 +699,12 @@ class Queen(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -810,6 +822,12 @@ class Bishop(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -925,6 +943,12 @@ class Knight(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -1066,6 +1090,12 @@ class Rook(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -1181,6 +1211,12 @@ class Pawn(Piece):
 
     @staticmethod
     def get_position_value(index, color):
+        """
+        returns the value of position Piece is standing at
+        :param index: index of tile on Board
+        :param color: PlayerColor
+        :return:
+        """
         if color == PlayerColor.Black:
             lookup_index = BoardProperties.NUM_TILES - index - 1
         else:
@@ -1389,9 +1425,19 @@ class SimpleMove(Move):
                                                    self.piece.color)
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def is_attack(self):
@@ -1434,9 +1480,19 @@ class AttackMove(Move):
         return super.__eq__(other) and self.attacked_piece == other.attacked_piece
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def execute_move(self):
@@ -1485,9 +1541,19 @@ class PawnPromotion(Move):
         self.value = 2 * move.value
 
     def __add__(self, other):
+        """
+        overloaded operator for forward addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __radd__(self, other):
+        """
+        overloaded operator for reverse addition
+        :param other: an entity with which we add instance of this class
+        :return: updated instance of this class
+        """
         return self.value + other
 
     def __repr__(self):
@@ -1659,17 +1725,6 @@ class Player:
         :param move: Move to be made
         :return: MoveTransition after making given Move
         """
-
-        # if not self.is_legal_move(move):
-        #     return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
-        # transition_board = move.execute_move()
-        # king_attacks = Player.calculate_attacks_on_tile(
-        #     transition_board.current_player.get_opponent().player_king.position,
-        #     transition_board.current_player.legal_moves)
-        # if len(king_attacks) != 0:
-        #     return MoveTransition(self.board, move, MoveStatus.LEAVES_KING_IN_CHECK)
-        # return MoveTransition(transition_board, move, MoveStatus.DONE)
-
         move_trans = self.make_move_without_changing_board(move)
         if move_trans.move_status == MoveStatus.DONE:
             transition_board = move.execute_move()
@@ -1683,6 +1738,11 @@ class Player:
             return move_trans
 
     def make_move_without_changing_board(self, move):
+        """
+        makes a Move on same board if the Move is legal
+        :param move: Move to be made
+        :return: MoveTransition after making given Move
+        """
         if not self.is_legal_move(move):
             return MoveTransition(self.board, move, MoveStatus.ILLEGAL_MOVE)
         new_move = deepcopy(move)

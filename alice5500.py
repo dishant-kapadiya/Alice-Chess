@@ -5,15 +5,7 @@ import operator
 import random
 
 print_msgs = False
-def sort_moves(moves):
-    """
-    give a list of moves, sort them according to better to worse order. refers the
-    value of a move stored as an entity of the move class
-    :param moves: list of Moves
-    :return: updated list of Moves
-    """
-    return moves.sort(key=operator.attrgetter('value'), reverse=True)
-
+common_threshold = 0.25
 
 def get_current_and_opponent_players(state):
     """
@@ -83,7 +75,7 @@ def alpha_beta_pruning(state):
                                                                     depth=current_depth))
                 t1 = time.time()
                 avail_time -= (t1 - t0)
-                if avail_time <= 0.1:
+                if avail_time <= common_threshold:
                     break
                 if old_score < possible_score:
                     best_move = move
@@ -107,7 +99,7 @@ def alpha_beta_min(state, alpha, beta, avail_time, depth):
     :return: an integer value that chooses the minimum from the child nodes
     """
     my_player, other_player = get_current_and_opponent_players(state)
-    if depth == 0 or avail_time <= 0.1:
+    if depth == 0 or avail_time <= common_threshold:
         score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t"*depth, "(MIN)Returned = ", score
@@ -127,7 +119,7 @@ def alpha_beta_min(state, alpha, beta, avail_time, depth):
             t1 = time.time()
             difference = t1 - t0
             avail_time -= difference
-            if avail_time <= 0.1:
+            if avail_time <= common_threshold:
                 return val
 
             if val < alpha:
@@ -148,7 +140,7 @@ def alpha_beta_max(state, alpha, beta, avail_time, depth=1):
     :return: an integer value that chooses the maximum from the child nodes
     """
     my_player, other_player = get_current_and_opponent_players(state)
-    if depth == 0 or avail_time <= 0.1:
+    if depth == 0 or avail_time <= common_threshold:
         score = depth * evaluate_state(my_player, other_player)
         if print_msgs:
             print "\t" * depth, "(MAX)Returned = ", score
@@ -168,7 +160,7 @@ def alpha_beta_max(state, alpha, beta, avail_time, depth=1):
             t1 = time.time()
             difference = t1 - t0
             avail_time -= difference
-            if avail_time <= 0.1:
+            if avail_time <= common_threshold:
                 return val
 
             if val > beta:
@@ -257,6 +249,8 @@ def generate_move_sentence(move):
     :param move: an instance of Move
     :return: a string value with a valid move to communicate to referee
     """
+    if isinstance(move, PawnPromotion):
+        move = move.move
     list_of_values = list()
     list_of_values.append(my_team_color)
     list_of_values.append("moves")
@@ -303,6 +297,23 @@ def make_move(move):
         sys.exit(0)
     return move_transition.transition_board
 
+
+def choose_random_move(game):
+    """
+    chooses a random doable move
+    :param game: game instance
+    :return: Move
+    """
+    player = game.current_player
+    moves = player.legal_moves
+    for i in range(len(moves)):
+        index = random.randrange(len(moves))
+        move_temp = moves[index]
+        trans = player.make_move(move_temp)
+        if trans.move_status == MoveStatus.DONE:
+            return move_temp
+        else:
+            moves.remove(move_temp)
 
 def text_to_move(moves, piece, board, source, destination):
     """
